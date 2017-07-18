@@ -233,25 +233,11 @@ function keyPress(hfig,events,~)
         set(hfig,'WindowButtonMotionFcn','');
     end
     
-    %ENTER BOUTON STATUS/BOUNDARY MODE 'D'
+    %ENTER AXON/BOUTON CROSS MODE 'D'
     if strcmp(events.Key,'d')
         set(hfig,'Name','Click to Add boutons','NumberTitle','off')
-        set(hfig,'WindowButtonDownFcn',{@boutonClick});
-        set(hfig,'WindowButtonMotionFcn',@maskMotion);
-    end
-    
-    %ENTER BOUTON/AXON CROSS TRACE MODE 'F'
-    if strcmp(events.Key,'f')
-        set(hfig,'Name','Click to trace across a bouton ','NumberTitle','off')
-        set(hfig,'WindowButtonDownFcn',@boutonCrossClick);
+        set(hfig,'WindowButtonDownFcn',{@boutonCrossClick});
         set(hfig,'WindowButtonMotionFcn','');
-    end
-    
-    %ENTER AXON BOUNDARY MODE 'V'
-    if strcmp(events.Key,'v')
-        set(hfig,'Name','Click to create axon region','NumberTitle','off')
-        set(hfig,'WindowButtonDownFcn',@axonRegionClick);
-        set(hfig,'WindowButtonMotionFcn',@maskMotion);
     end
     
     %ENTER BACKGROUND ROI MODE 'B'
