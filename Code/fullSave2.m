@@ -37,8 +37,8 @@ function completionCheck(hfig)
             cbs = figData.boutonStatus{i}{j};
             cbcr = figData.boutonCross{i}{j};
             for k = 1:size(cbc,1)
-                complete = ~any([isempty(cbc(k)), isempty(cbs(k)), isempty(cbcr{k})]);
-                incomplete = any([~isempty(cbc(k)), ~isempty(cbs(k)), ~isempty(cbcr{k})]);
+                complete = ~any([any(isnan(cbc(k,:))), k>size(cbs,1), any(isnan(cbs(k,:))), isempty(cbcr{k})]);
+                incomplete = ~complete & any([~any(isnan(cbc(k,:))), ~k>size(cbs,1), ~any(isnan(cbs(k,:))), ~isempty(cbcr{k})]);
                 figData.boutonCount(j,k,i) = complete;  %creates j x k x i table of bouton analysis completion
                 figData.boutonPartialCount(j,k,i) = incomplete;
             end
