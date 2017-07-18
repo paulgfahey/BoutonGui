@@ -4,22 +4,16 @@ function boutonCrossClick(hfig,~)
     [cs,ca,cb,cx,cy] = currentOut(hfig);
     
     cbcs = figData.boutonCross{cs}{ca}{cb}; %current bouton cross set
-    cbw = figData.boutonWidth{cs}{ca}{cb};
-    cbcp = figData.boutonCrossProfile{cs}{ca}{cb};
-    cbcseg = figData.boutonCrossSegment{cs}{ca}{cb};
-    law = figData.localAxonWidth{cs}{ca}{cb};
-    lacp = figData.localAxonCrossProfile{cs}{ca}{cb};
-    lacseg = figData.localAxonCrossSegment{cs}{ca}{cb};
     cbs = figData.boutonStatus{cs}{ca};
     cbc = figData.boutonCenter{cs}{ca};
     
-    if isempty(cbcs) && ~strcmp(buttonPRessed,'alt')
+    if isempty(cbcs) && ~strcmp(buttonPressed,'alt')
         cbcs = [cx, cy, figData.currentZ{cs}];
     elseif strcmp(buttonPressed, 'alt')
         klist = [];
         for k=1:size(cbcs,1)
             if cbcs(k,1)>cx-5 && cbcs(k,1)<cx+5 && cbcs(k,2)>cy-5 && cbcs(k,2)<cy+5
-                klist(end+1) = k;
+                klist(end+1) = k; %#ok<AGROW>
             end
         end
         if ~isempty(klist)
@@ -34,13 +28,17 @@ function boutonCrossClick(hfig,~)
             cbcs(end+1,:) = [cx, cy, figData.currentZ{cs}];
              if size(cbcs,1) >= 4
                 cbs(cb,:) = figData.boutonStatusMatrix;
-                [cbw,cbc(cb,:),cbcp,cbcseg] = segmentWidth(cbcs(3:4,1:2),hfig);
-                [law,~,lacp,lacseg] = segmentWidth(cbcs(1:2,1:2),hfig);
+                [cbw,cbc(cb,:),cbcp,cbcseg] = segmentWidth(cbcs(3:4,:),hfig);
+                [law,~,lacp,lacseg] = segmentWidth(cbcs(1:2,:),hfig);
+                
+                figData.boutonWidth{cs}{ca}{cb} = cbw;
+                figData.boutonCrossProfile{cs}{ca}{cb} = cbcp;
+                figData.boutonCrossSegment{cs}{ca}{cb} = cbcseg;
+                figData.localAxonWidth{cs}{ca}{cb} = law;
+                figData.localAxonCrossProfile{cs}{ca}{cb} = lacp;
+                figData.localAxonCrossSegment{cs}{ca}{cb} = lacseg;
+                
                 figData.currBouton{cs}{ca} = figData.currBouton{cs}{ca} +1;
-                figData.boutonCross{cs}{ca}{figData.currBouton{cs}{ca}} = {};
-                set(hfig,'Name','Click to Add boutons','NumberTitle','off')
-                set(hfig,'WindowButtonDownFcn',{@boutonClick});
-                set(hfig,'WindowButtonMotionFcn',@maskMotion);
             end
         end
     end
@@ -48,12 +46,6 @@ function boutonCrossClick(hfig,~)
     figData.boutonCross{cs}{ca}{cb} = cbcs;
     figData.boutonStatus{cs}{ca} = cbs;
     figData.boutonCenter{cs}{ca} = cbc;
-    figData.boutonWidth{cs}{ca}{cb} = cbw;
-    figData.boutonCrossProfile{cs}{ca}{cb} = cbcp;
-    figData.boutonCrossSegment{cs}{ca}{cb} = cbcseg;
-    figData.localAxonWidth{cs}{ca}{cb} = law;
-    figData.localAxonCrossProfile{cs}{ca}{cb} = lacp;
-    figData.localAxonCrossSegment{cs}{ca}{cb} = lacseg;
     
     guidata(hfig,figData);
     fullReplot(hfig); 
