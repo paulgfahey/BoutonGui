@@ -29,12 +29,13 @@ function boutonCrossClick(hfig,~)
              if size(cbcs,1) >= 4
                 cbs(cb,:) = figData.boutonStatusMatrix;
                 [cbw,cbc(cb,:),cbcp,cbcseg] = segmentWidth(cbcs(3:4,:),hfig);
-                [law,~,lacp,lacseg] = segmentWidth(cbcs(1:2,:),hfig);
+                [law,lac,lacp,lacseg] = segmentWidth(cbcs(1:2,:),hfig);
                 
                 figData.boutonWidth{cs}{ca}{cb} = cbw;
                 figData.boutonCrossProfile{cs}{ca}{cb} = cbcp;
                 figData.boutonCrossSegment{cs}{ca}{cb} = cbcseg;
                 figData.localAxonWidth{cs}{ca}{cb} = law;
+                figData.localAxonCenter{cs}{ca}{cb} = lac;
                 figData.localAxonCrossProfile{cs}{ca}{cb} = lacp;
                 figData.localAxonCrossSegment{cs}{ca}{cb} = lacseg;
                 

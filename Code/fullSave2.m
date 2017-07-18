@@ -239,16 +239,42 @@ function perBoutonSummary(hfig)
                     hold on
                     line(cbcseg(:,1)-xmin,cbcseg(:,2)-ymin);
                     line(lacseg(:,1)-xmin,lacseg(:,2)-ymin);
-                    backbone = figData.axonBrightnessProfile{i}{j}(:,1:2);
+                    backbone = figData.axonBrightnessProfile{i}{j};
                     backbone = backbone(:,backbone(1,:) > ymin & backbone(1,:) < ymax);
                     backbone = backbone(:,backbone(2,:) > xmin & backbone(2,:) < xmax);
                     line(backbone(:,1)-xmin,backbone(:,2)-ymin);
                     axis([0 size(boutonImageROI,1) 0 size(boutonImageROI,2)]);
                     formatImage
                     
+                    %plot bouton and axon cross int with thresholds
+                    subplot(figData.numStacks,5,5*pos-2)
+                    hold on
+                    [boutonProfile,axonProfile,boutonThresh,axonThresh] = boutonWidthPlotting(i,j,k,hfig);
+                    plot(boutonProfile(:,1),boutonProfile(:,2));
+                    plot(axonProfile(:,1),axonProfile(:,2));
+                    plot([-100,100],[boutonThresh,boutonThresh]);
+                    plot([-100,100],[axonThresh,axonThresh]);
+                    axis([-100 100, 0 100])
+                    widthRatio = round(figData.boutonWidth{i}{j}{k}/figData.axonWidth{i}{j}{k},2);
+                    title(['bouton:axon width = ' num2str(widthRatio)]);
+                    formatImage
+                    
+                    %plot bouton and axon longitudinal int with thresholds
+                    subplot(figData.numStacks,5,5*pos-1)
+                    hold on
+                    plot(backbone(:,4));
+                    formatImage
+                    
+                    %title with max:median int ratio
+                    
+                    
+                    
                     %plot brightness boosted bouton, rotated
                     subplot(figData.numStacks,5,5*pos)
                     boutonImageROIRot = rotateBouton(cbcr(3:4,:),cbc(k,:),hfig);
+                    image(imadjust(boutonImageROIRot,[0 figData.high_in{i}],[0 figData.high_out{i}]));
+                    hold on
+                    formatImage
                     
 
                     
@@ -275,6 +301,28 @@ function perBoutonSummary(hfig)
         end
     end
     guidata(hfig,figData)
+end
+
+function [boutonProfile, axonProfile, boutonThresh, axonThresh] = boutonWidthPlotting(cs,ca,cb,hfig)
+    figData = guidata(hfig);
+    boutonProfileInt = figData.boutonCrossProfile{cs}{ca}{cb};
+    boutonProfileInd = (1:size(boutonProfileInt,1)) - round(mean(boutonProfileInt)/2);
+    boutonProfile = nan(size(boutonProfileInt,1),2);
+    boutonProfile(:,2) = boutonProfileInt;
+    boutonProfile(:,1) = boutonProfileInd;
+
+    axonProfileInt = figData.axonCrossProfile{cs}{ca}{cb};
+    axonProfileInd = (1:size(axonProfileInt,1)) - round(size(axonProfileInt,1)/2);
+    axonProfile = nan(size(axonProfileInt,1),2);
+    axonProfile(:,2) = axonProfileInt;
+    axonProfile(:,1) = axonProfileInd;
+
+    backbone = figData.axonBrightnessProfile{cs}{ca}(:,1:2);
+    boutonIndx = find(backbone == figData.boutonCenter{cs}{ca}(ca,:));
+    axonIndx = find(backbone == figData.localAxonWidth{cs}{ca}{cb});
+
+    boutonThresh = figData.axonBrightnessProfileWeights{cs}{ca}(boutonIndx,4); %#ok<FNDSB>
+    axonThresh = figData.axonBrightnessProfileWeights{cs}{ca}(axonIndx,4); %#ok<FNDSB>
 end
 
 function outData = unshuffleOutput(hfig)
