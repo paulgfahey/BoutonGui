@@ -1,0 +1,1 @@
+figData = guidata(gcf);

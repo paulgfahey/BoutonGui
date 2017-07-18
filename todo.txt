@@ -1,0 +1,23 @@
+change to allow exclusion of bouton at single timepoint, not across all timepoints. 
+
+
+
+test run and spot points for streamlining, rearrange keys as necessary
+outline instructions for use, points of subjective choice, and resulting methods section. 
+include tips and state of mind for different approaches (how to make sure choosing corresponding boutons and not new ones, how much of bouton to include in boundary outline, where to place proximal axon, how to draw bouton backbone trace, etc).
+Cross reference with DePaola to see what can be borrowed.
+
+
+comment all functions and ambiguous variables, for loops, etc.
+
+
+
+plot peaks as x's or something, check list of locations against bouton boundaries on fullReplot (make bouton mastermask for expediency)
+
+need to update output save function for new structs
+
+
+
+bouton suggestions
+
+
