@@ -1,4 +1,4 @@
-function fullSave(hfig)
+function fullSave2(hfig)
     figData = guidata(hfig);
     sourceFolder = cd('results');
     resultsFolder = cd('resultsTiffs');
@@ -7,7 +7,7 @@ function fullSave(hfig)
     stackAxonSummary(hfig);
     perAxonSummary(hfig);
     perBoutonSummary(hfig);
-    outData = unshuffleOutput(hfig);
+    outData = unshuffleOutput(hfig); %#ok<NASGU>
     
     cd(resultsFolder)  
     filename = strrep(figData.mouseFileName,'.mat','');
@@ -63,9 +63,9 @@ function completionCheck(hfig)
         for i = 1:figData.numStacks
             stack{x} = num2str(i); %#ok<AGROW>
             if figData.axonCount(i,j)
-                axon{x} = num2str(j);
+                axon{x} = num2str(j); %#ok<AGROW>
             else
-                axon{x} = num2str(0);
+                axon{x} = num2str(0); %#ok<AGROW>
             end
             bouton{x} = strrep(strcat(num2str(figData.boutonCount(j,1:figData.maxBouton(j),i))),' ',''); %#ok<AGROW>
             x = x+1;
@@ -185,6 +185,7 @@ end
 
 function perBoutonSummary(hfig)
     figData = guidata(hfig);
+    
     %SAVE A SUMMARY FIGURE FOR EACH BOUTON WITH ALL ELEMENTS PERFORMED
     filename = strrep(figData.mouseFileName,'.mat','');
     for j = 1:figData.maxAxon
@@ -194,89 +195,65 @@ function perBoutonSummary(hfig)
                 for i = 1:figData.numStacks
                     %Abbreviated version
                     cbc = figData.boutonCenter{i}{j};
-                    cbbo = figData.boutonBoundary{i}{j};
-                    cbbm = figData.boutonMask{i}{j};
                     cbcr = figData.boutonCross{i}{j};
                     cats = figData.axonTraceSnap{i}{j};
-                    cbam = figData.axonMask{i}{j};
+                    
+                    cbcseg = figData.boutonCrossSegment{i}{j}{k};
+                    lacseg = figData.localAxonCrossSegment{i}{j}{k};
+                    
+                    cbcp = figData.boutonCrossProfile{i}{j}{k};
+                    lacp = figData.localAxonCrossProfile{i}{j}{k};
+                    
+                    cbw = figData.boutonWidth{i}{j}{k};
+                    law = figData.localAxonWidth{i}{j}{k};
                     
                     
 
                     %Create filtered versions of raw image at boundary z plane
                     boutonImage = figData.stackDataShuffled{i}(:,:,cbc(k,3));
-                    boutonMaskImage = boutonImage.*uint8(cbbm{k});
-                    boutonAntiMaskImage = boutonImage.*uint8(~cbbm{k});
-                    axonMaskImage = boutonImage.*uint8(cbam{k});
-
-                    %Intensity and Pixel coordinates for line tracing intensity
-                    %along longitudinal axis of bouton, nan for outside mask
-                    [intx, inty, int] = improfile(boutonMaskImage, cats(:,1), cats(:,2), figData.axonTraceSnapLength{i}{j});
-                    figData.boutonBackboneBoutonOnly{i}{j}{k} = [int, intx, inty];
-                    figData.boutonBackboneBoutonOnly{i}{j}{k}(int==0,:) = nan;
-
-
-                    %Intensity and Pixel coordinates for line tracing intensity
-                    %along axon backbone outside bouton, nan for inside bouton
-                    [intx, inty, int] = improfile(boutonAntiMaskImage, cats(:,1), cats(:,2), figData.axonTraceSnapLength{i}{j});
-                    figData.boutonBackboneOnly{i}{j}{k} = [int, intx, inty];
-                    figData.boutonBackboneOnly{i}{j}{k}(int==0,:) = nan;
-
-                    %Intensity and Pixel coordinates for line tracing across
-                    %bouton perpendicular axis
-                    [intx, inty, int] = improfile(boutonMaskImage, cbcr{k}(3:4,1), cbcr{k}(3:4,2), 100);
-                    figData.boutonCrossOnly{i}{j}{k} = [int, intx, inty];
-                    figData.boutonCrossOnly{i}{j}{k}(int==0,:) = [];
-                    idx = figData.boutonCrossOnly{i}{j}{k};
-                    [~, minId] = min(idx(:,2));
-                    [~, maxId] = max(idx(:,2));
-                    figData.boutonCrossOnlySegment{i}{j}{k} = [idx(minId,2:3);idx(maxId,2:3)];
-                    figData.boutonCrossOnlyLength{i}{j}{k} = sqrt(sum(diff(figData.boutonCrossOnlySegment{i}{j}{k}).^2));
-
-                    %Intensity and Pixel Coordinates for line tracing across
-                    %proximal axon perpendicular axon
-                    [intx, inty, int] = improfile(axonMaskImage, cbcr{k}(1:2,1), cbcr{k}(1:2,2), 100);
-                    figData.axonCrossOnly{i}{j}{k} = [int, intx, inty];
-                    figData.axonCrossOnly{i}{j}{k}(int==0,:) = [];
-                    idx = figData.axonCrossOnly{i}{j}{k};
-                    [~, minId] = min(idx(:,2));
-                    [~, maxId] = max(idx(:,2));
-                    figData.axonCrossOnlySegment{i}{j}{k} = [idx(minId,2:3);idx(maxId,2:3)];
                     
-                    if ~isempty(figData.axonCrossOnlySegment{i}{j}{k})
-                        figData.axonCrossOnlyLength{i}{j}{k} = sqrt(sum(diff(figData.axonCrossOnlySegment{i}{j}{k}).^2));
-                        figData.boutonAxonWidthRatio{i}{j}{k} = figData.boutonCrossOnlyLength{i}{j}{k} ./ figData.axonCrossOnlyLength{i}{j}{k};
-                    end
-
                     %create an roi centered around that bouton
-                    ymin = round(min(cbbo{k}(:,1)))-25;
+                    ymin = round(cbc(k,2))-25;
                     ymin(ymin<0)=0;
-                    xmin = round(min(cbbo{k}(:,2)))-25;
+                    xmin = round(cbc(k,1))-25;
                     xmin(xmin<0)=0;
-                    ymax = round(max(cbbo{k}(:,1)))+25;
-                    xmax = round(max(cbbo{k}(:,2)))+25;
-
+                    ymax = round(cbc(k,2))+25;
+                    ymax(ymax>figData.dims{i}(2)) = figData.dims{i}(2);
+                    xmax = round(cbc(k,1))+25;
+                    xmax(xmax>figData.dims{i}(1)) = figData.dims{i}(2);
+                    
+                    %plot brightness boosted bouton, unrotated
                     pos = figData.stackKey(i); %image plotting order is unshuffled
-                    subplot(figData.numStacks,3,3*pos-2)
+                    subplot(figData.numStacks,5,5*pos-4)
                     boutonImageROI = boutonImage(ymin:ymax,xmin:xmax);
                     image(imadjust(boutonImageROI,[0 figData.high_in{i}],[0 figData.high_out{i}]));
                     statStrAbbr = {'Alpha','Beta','Exclude','Absent'};
                     title(['Status: ' statStrAbbr(figData.boutonStatus{i}{j}(k,:)>0)]);
                     ylabel(strrep(figData.stackfileNameShuffled{i},'.mat',''));
                     formatImage
-
-                    subplot(figData.numStacks,3,3*pos-1)
-                    cbcrs = figData.boutonCrossOnlySegment{i}{j}{k};
-                    cacrs = figData.axonCrossOnlySegment{i}{j}{k};
-                    hold on
+                    
+                    
+                    %plot brightness boosted bouton, unrotated with trace overlays
+                    subplot(figData.numStacks,5,5*pos-3)
                     image(imadjust(boutonImageROI,[0 figData.high_in{i}],[0 figData.high_out{i}]));
-                    plot(cbbo{k}(:,2)-xmin+1, cbbo{k}(:,1)-ymin+1,'r');
-                    plot(cats(:,1)-xmin+1, cats(:,2)-ymin+1,'g');
-                    plot(cbcrs(:,1)-xmin+1, cbcrs(:,2)-ymin+1, 'm');
-                    plot(cacrs(:,1)-xmin+1, cacrs(:,2)-ymin+1, 'm');
+                    hold on
+                    line(cbcseg(:,1)-xmin,cbcseg(:,2)-ymin);
+                    line(lacseg(:,1)-xmin,lacseg(:,2)-ymin);
+                    backbone = figData.axonBrightnessProfile{i}{j}(:,1:2);
+                    backbone = backbone(:,backbone(1,:) > ymin & backbone(1,:) < ymax);
+                    backbone = backbone(:,backbone(2,:) > xmin & backbone(2,:) < xmax);
+                    line(backbone(:,1)-xmin,backbone(:,2)-ymin);
                     axis([0 size(boutonImageROI,1) 0 size(boutonImageROI,2)]);
-                    title(['max.width.ratio = ' num2str(round(figData.boutonAxonWidthRatio{i}{j}{k},3))]);
                     formatImage
+                    
+                    %plot brightness boosted bouton, rotated
+                    subplot(figData.numStacks,5,5*pos)
+                    
 
+                    
+                    
+                    
+                    
                     subplot(figData.numStacks,3,3*pos)
                     hold on
                     axonBackboneSegment = figData.boutonBackboneOnly{i}{j}{k}(:,1) - figData.axonBrightnessProfileWeights{i}{j}(:,4);
