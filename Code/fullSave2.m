@@ -195,7 +195,7 @@ function perBoutonSummary(hfig)
                 for i = 1:figData.numStacks
                     %Abbreviated version
                     cbc = figData.boutonCenter{i}{j};
-                    cbcr = figData.boutonCross{i}{j};
+                    cbcr = figData.boutonCross{i}{j}{k};
                     cats = figData.axonTraceSnap{i}{j};
                     
                     cbcseg = figData.boutonCrossSegment{i}{j}{k};
@@ -248,6 +248,7 @@ function perBoutonSummary(hfig)
                     
                     %plot brightness boosted bouton, rotated
                     subplot(figData.numStacks,5,5*pos)
+                    boutonImageROIRot = rotateBouton(cbcr(3:4,:),cbc(k,:),hfig);
                     
 
                     
