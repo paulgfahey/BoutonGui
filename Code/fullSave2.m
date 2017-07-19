@@ -13,7 +13,7 @@ function fullSave2(hfig)
     filename = strrep(figData.mouseFileName,'.mat','');
     t = datetime('now','TimeZone','local');
     ts = datestr(t,'yymmdd_hhMMss',2000);
-    save(['boutonfinalsave_' filename '_' ts '.mat'],'figData','outData','-v7.3');
+%     save(['boutonfinalsave_' filename '_' ts '.mat'],'figData','outData','-v7.3');
     cd(sourceFolder)
     guidata(hfig, figData)
 end
@@ -240,7 +240,9 @@ function perBoutonSummary(hfig)
                     image(imadjust(boutonImageROI,[0 figData.high_in{i}],[0 figData.high_out{i}]));
                     hold on
                     line(cbcseg(:,1)-xmin+1,cbcseg(:,2)+1-ymin,'Color','g');
-                    line(lacseg(:,1)-xmin+1,lacseg(:,2)+1-ymin,'Color','g');
+                    for m = 1:floor(size(lacseg,1)/2)
+                        line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color','g');
+                    end
                     backbone = figData.axonBrightnessProfile{i}{j};
                     backbone = backbone(backbone(:,2) > ymin & backbone(:,2) < ymax,:);
                     backbone = backbone(backbone(:,1) > xmin & backbone(:,1) < xmax,:);
@@ -254,10 +256,12 @@ function perBoutonSummary(hfig)
                     hold on
                     [boutonProfile,axonProfile] = boutonWidthPlotting(i,j,k,hfig);
                     plot(boutonProfile(:,1),boutonProfile(:,2));
-                    plot(axonProfile(:,1),axonProfile(:,2));
+                    for m = 1:size(axonProfile,2)
+                        plot(axonProfile{m}(:,1),axonProfile{m}(:,2));
+                    end
                     plot([-10,10],[.5,.5],'--');
                     axis([-10 10, 0 8])
-                    widthRatio = round(figData.boutonWidth{i}{j}{k}/figData.localAxonWidth{i}{j}{k},2);
+                    widthRatio = round(figData.boutonWidth{i}{j}{k}/mean(figData.localAxonWidth{i}{j}{k}),2);
                     title(['bouton:axon width = ' num2str(widthRatio)]);
                     
                     %plot bouton and axon longitudinal int with thresholds
@@ -274,7 +278,7 @@ function perBoutonSummary(hfig)
                     
                     %plot brightness boosted bouton, rotated
                     subplot(figData.numStacks,5,5*pos)
-                    boutonImageROIRot = rotateBouton(cbcr(3:4,:),cbc(k,1:2),hfig,i);
+                    boutonImageROIRot = rotateBouton(cbcr(1:2,:),cbc(k,1:2),hfig,i);
                     image(imadjust(boutonImageROIRot,[0 figData.high_in{i}],[0 figData.high_out{i}]));
                     hold on
                     formatImage
@@ -295,8 +299,7 @@ function [boutonProfile, axonProfile] = boutonWidthPlotting(cs,ca,cb,hfig)
 
     backbone = figData.axonBrightnessProfile{cs}{ca}(:,1:2);
     boutonIndx = find(ismember(backbone(:,1:2),figData.boutonCenter{cs}{ca}(cb,1:2),'rows'));
-    axonIndx = find(ismember(backbone(:,1:2),figData.localAxonCenter{cs}{ca}{cb}(:,1:2),'rows'));
-
+    
     boutonProfileInt = figData.boutonCrossProfile{cs}{ca}{cb};
     weight = figData.axonBrightnessProfileWeights{cs}{ca}(boutonIndx,4); %#ok<FNDSB>
     boutonProfileInt = (boutonProfileInt / weight);
@@ -305,15 +308,19 @@ function [boutonProfile, axonProfile] = boutonWidthPlotting(cs,ca,cb,hfig)
     boutonProfile = nan(size(boutonProfileInt,1),2);
     boutonProfile(:,2) = boutonProfileInt;
     boutonProfile(:,1) = boutonProfileInd;
-
-    axonProfileInt = figData.localAxonCrossProfile{cs}{ca}{cb};
-    weight = figData.axonBrightnessProfileWeights{cs}{ca}(axonIndx,4); %#ok<FNDSB>
-    axonProfileInt = (axonProfileInt /weight);
-    [~,ind] = max(axonProfileInt);
-    axonProfileInd = (1:size(axonProfileInt,1)) - ind;
-    axonProfile = nan(size(axonProfileInt,1),2);
-    axonProfile(:,2) = axonProfileInt;
-    axonProfile(:,1) = axonProfileInd;
+    
+    axonProfile = {};
+    for m = 1:size(figData.localAxonCrossProfile{cs}{ca}{cb},2)
+        axonIndx = find(ismember(backbone(:,1:2),figData.localAxonCenter{cs}{ca}{cb}(m,1:2),'rows'));
+        axonProfileInt = figData.localAxonCrossProfile{cs}{ca}{cb}{m};
+        weight = figData.axonBrightnessProfileWeights{cs}{ca}(axonIndx,4); %#ok<FNDSB>
+        axonProfileInt = (axonProfileInt /weight);
+        [~,ind] = max(axonProfileInt);
+        axonProfileInd = (1:size(axonProfileInt,1)) - ind;
+        axonProfile{m} = nan(size(axonProfileInt,1),2); %#ok<*AGROW>
+        axonProfile{m}(:,2) = axonProfileInt;
+        axonProfile{m}(:,1) = axonProfileInd;
+    end
 end
 
 function outData = unshuffleOutput(hfig)
