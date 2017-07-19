@@ -1,12 +1,12 @@
-function axonCrossClick(hfig)
+function axonCrossClick(hfig,~)
     figData = guidata(hfig);
     buttonPressed = get(hfig,'SelectionType');
     [cs,ca,cb,cx,cy] = currentOut(hfig);
     
     cacs = figData.axonCross{cs}{ca}{cb};
     
-    if isempty(cbcs) && ~strcmp(buttonPressed,'alt')
-        cacs = [cs, cy, figData.currentZ{cs}];
+    if isempty(cacs) && ~strcmp(buttonPressed,'alt')
+        cacs = [cx, cy, figData.currentZ{cs}];
     elseif strcmp(buttonPressed,'alt')
         klist = [];
         for k = 1:size(cacs)
@@ -16,7 +16,7 @@ function axonCrossClick(hfig)
         end
         if ~isempty(klist)
             for k = 1:size(klist,1)
-                kpair = [k,k-1+2*mod(k)];
+                kpair = [k,k-1+2*mod(k,2)];
                 cacs(kpair) = [];
                 disp('axon cross deleted')
             end
@@ -30,7 +30,7 @@ function axonCrossClick(hfig)
                 lacp = {};
                 lacseg = [];
 
-                for i = 1:floor(cacs/2)
+                for i = 1:floor(size(cacs,1)/2)
                     [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*i-1:2*i,:),hfig);
                     law = [law;lawi]; %#ok<*AGROW>
                     lac = [lac;laci];

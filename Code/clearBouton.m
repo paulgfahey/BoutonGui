@@ -6,6 +6,7 @@ function clearBouton(hfig)
     figData.boutonBoundary{cs}{ca}{cb} = {};
     figData.boutonMask{cs}{ca}{cb} = {};
     figData.boutonCross{cs}{ca}{cb} = {};
+    figData.axonCross{cs}{ca}{cb} = {};
     figData.axonRegionCenter{cs}{ca}(cb,:) = nan;
     figData.axonMask{cs}{ca}{cb} = {};
     figData.axonBoundary{cs}{ca}{cb} = {};

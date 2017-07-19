@@ -123,6 +123,13 @@ function boutonPlot(hfig)
             line(cbcr(j-1:j,1), cbcr(j-1:j,2),'Color','y','LineStyle','-','linewidth',1)
         end
     end
+    
+    cacr = figData.axonCross{cs}{ca}{cb};
+    if ~isempty(cacr)
+        for j = 2:2:size(cacr,1)
+            line(cacr(j-1:j,1),cacr(j-1:j,2),'Color','y','LineStyle','-','linewidth',1)
+        end
+    end
 
 
     cbbs = figData.boutonBoundary{cs}{ca};
