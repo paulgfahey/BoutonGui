@@ -11,14 +11,13 @@ function boutonCrossClick(hfig,~)
         cbcs = [cx, cy, figData.currentZ{cs}];
     elseif strcmp(buttonPressed, 'alt')
         klist = [];
-        for k=1:size(cbcs,1)
-            if cbcs(k,1)>cx-5 && cbcs(k,1)<cx+5 && cbcs(k,2)>cy-5 && cbcs(k,2)<cy+5
+        for k=1:size(cbc,1)
+            if cbc(k,1)>cx-15 && cbc(k,1)<cx+15 && cbc(k,2)>cy-15 && cbc(k,2)<cy+15
                 klist(end+1) = k; %#ok<AGROW>
             end
         end
         if ~isempty(klist)
-            klist = [klist,(klist-1+2*mod(klist,2))];
-            cbcs(klist,:) = [];
+            cbcs = [];
             cbs(klist,:) = nan(1,4);
             cbc(klist,:) = nan(1,3);
             disp('Bouton Deleted')

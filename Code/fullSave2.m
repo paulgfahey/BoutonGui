@@ -7,7 +7,7 @@ function fullSave2(hfig)
     stackAxonSummary(hfig);
     perAxonSummary(hfig);
     perBoutonSummary(hfig);
-    outData = unshuffleOutput(hfig); %#ok<NASGU>
+%     outData = unshuffleOutput(hfig); %#ok<NASGU>
     
     cd(resultsFolder)  
     filename = strrep(figData.mouseFileName,'.mat','');
@@ -50,9 +50,11 @@ function completionCheck(hfig)
     figData.maxBouton = zeros(figData.numStacks,25);
     for i = 1:figData.numStacks
         for j = 1:25
-            findmax = find(figData.boutonPartialCount(j,:,i),1,'last');
-            if ~isempty(findmax)
-                figData.maxBouton(i,j) = findmax;
+            findMaxPartial = find(figData.boutonPartialCount(j,:,i),1,'last');
+            findMaxComplete = find(figData.boutonCount(j,:,i),1,'last');
+            findMax = max([findMaxPartial,findMaxComplete]);
+            if ~isempty(findMax)
+                figData.maxBouton(i,j) = findMax;
             end
         end
     end
@@ -237,62 +239,47 @@ function perBoutonSummary(hfig)
                     subplot(figData.numStacks,5,5*pos-3)
                     image(imadjust(boutonImageROI,[0 figData.high_in{i}],[0 figData.high_out{i}]));
                     hold on
-                    line(cbcseg(:,1)-xmin,cbcseg(:,2)-ymin);
-                    line(lacseg(:,1)-xmin,lacseg(:,2)-ymin);
+                    line(cbcseg(:,1)-xmin+1,cbcseg(:,2)+1-ymin,'Color','g');
+                    line(lacseg(:,1)-xmin+1,lacseg(:,2)+1-ymin,'Color','g');
                     backbone = figData.axonBrightnessProfile{i}{j};
-                    backbone = backbone(:,backbone(1,:) > ymin & backbone(1,:) < ymax);
-                    backbone = backbone(:,backbone(2,:) > xmin & backbone(2,:) < xmax);
-                    line(backbone(:,1)-xmin,backbone(:,2)-ymin);
+                    backbone = backbone(backbone(:,2) > ymin & backbone(:,2) < ymax,:);
+                    backbone = backbone(backbone(:,1) > xmin & backbone(:,1) < xmax,:);
+                    line(backbone(:,1)-xmin+1,backbone(:,2)-ymin+1,'Color','b');
                     axis([0 size(boutonImageROI,1) 0 size(boutonImageROI,2)]);
+                    title(['clicked overlays'])
                     formatImage
                     
                     %plot bouton and axon cross int with thresholds
                     subplot(figData.numStacks,5,5*pos-2)
                     hold on
-                    [boutonProfile,axonProfile,boutonThresh,axonThresh] = boutonWidthPlotting(i,j,k,hfig);
+                    [boutonProfile,axonProfile] = boutonWidthPlotting(i,j,k,hfig);
                     plot(boutonProfile(:,1),boutonProfile(:,2));
                     plot(axonProfile(:,1),axonProfile(:,2));
-                    plot([-100,100],[boutonThresh,boutonThresh]);
-                    plot([-100,100],[axonThresh,axonThresh]);
-                    axis([-100 100, 0 100])
-                    widthRatio = round(figData.boutonWidth{i}{j}{k}/figData.axonWidth{i}{j}{k},2);
+                    plot([-10,10],[.5,.5],'--');
+                    axis([-10 10, 0 8])
+                    widthRatio = round(figData.boutonWidth{i}{j}{k}/figData.localAxonWidth{i}{j}{k},2);
                     title(['bouton:axon width = ' num2str(widthRatio)]);
-                    formatImage
                     
                     %plot bouton and axon longitudinal int with thresholds
                     subplot(figData.numStacks,5,5*pos-1)
+                    backbone = figData.axonBrightnessProfileWeighted{i}{j};
+                    backbone = backbone(backbone(:,2) > ymin & backbone(:,2) < ymax,:);
+                    backbone = backbone(backbone(:,1) > xmin & backbone(:,1) < xmax,:);
+                    backbone = backbone(:,4)/figData.axonWeightedBrightnessMedian{i}{j};
                     hold on
-                    plot(backbone(:,4));
-                    formatImage
-                    
-                    %title with max:median int ratio
-                    
-                    
+                    plot(backbone)
+                    axis([0,size(backbone,1),.75,10]);
+                    peakToInt = max(backbone);
+                    title(['bouton peak : med int = ' num2str(round(peakToInt,2))]);
                     
                     %plot brightness boosted bouton, rotated
                     subplot(figData.numStacks,5,5*pos)
-                    boutonImageROIRot = rotateBouton(cbcr(3:4,:),cbc(k,:),hfig);
+                    boutonImageROIRot = rotateBouton(cbcr(3:4,:),cbc(k,1:2),hfig,i);
                     image(imadjust(boutonImageROIRot,[0 figData.high_in{i}],[0 figData.high_out{i}]));
                     hold on
                     formatImage
-                    
-
-                    
-                    
-                    
-                    
-                    subplot(figData.numStacks,3,3*pos)
-                    hold on
-                    axonBackboneSegment = figData.boutonBackboneOnly{i}{j}{k}(:,1) - figData.axonBrightnessProfileWeights{i}{j}(:,4);
-                    axonBackboneSegment = axonBackboneSegment + figData.axonBrightnessNormBaseline{i}{j};
-                    boutonBackboneSegment = figData.boutonBackboneBoutonOnly{i}{j}{k}(:,1) - figData.axonBrightnessProfileWeights{i}{j}(:,4);
-                    boutonBackboneSegment = boutonBackboneSegment + figData.axonBrightnessNormBaseline{i}{j};
-                    plot(boutonBackboneSegment/figData.axonWeightedBrightnessMedian{i}{j},'r');
-                    plot(axonBackboneSegment/figData.axonWeightedBrightnessMedian{i}{j},'k');
-                    figData.boutonMaxInt{i}{j}{k} = max(boutonBackboneSegment);
-                    title(['mean.int.ratio = ' num2str(round(figData.boutonMaxInt{i}{j}{k} / figData.axonWeightedBrightnessMedian{i}{j},3))]);
-                    axisrange = boutonWindowPlotRange(boutonBackboneSegment);
-                    axis(axisrange)
+                    title(['rotated']);
+                   
                 end
                 set(boutonSummary, 'Position', get(0, 'Screensize'));
                 print(boutonSummary,'-dpng',[filename 'A' num2str(j) 'B' num2str(k)], '-noui');
@@ -303,26 +290,30 @@ function perBoutonSummary(hfig)
     guidata(hfig,figData)
 end
 
-function [boutonProfile, axonProfile, boutonThresh, axonThresh] = boutonWidthPlotting(cs,ca,cb,hfig)
+function [boutonProfile, axonProfile] = boutonWidthPlotting(cs,ca,cb,hfig)
     figData = guidata(hfig);
+
+    backbone = figData.axonBrightnessProfile{cs}{ca}(:,1:2);
+    boutonIndx = find(ismember(backbone(:,1:2),figData.boutonCenter{cs}{ca}(cb,1:2),'rows'));
+    axonIndx = find(ismember(backbone(:,1:2),figData.localAxonCenter{cs}{ca}{cb}(:,1:2),'rows'));
+
     boutonProfileInt = figData.boutonCrossProfile{cs}{ca}{cb};
-    boutonProfileInd = (1:size(boutonProfileInt,1)) - round(mean(boutonProfileInt)/2);
+    weight = figData.axonBrightnessProfileWeights{cs}{ca}(boutonIndx,4); %#ok<FNDSB>
+    boutonProfileInt = (boutonProfileInt / weight);
+    [~,ind] = max(boutonProfileInt);
+    boutonProfileInd = (1:size(boutonProfileInt,1)) - ind;
     boutonProfile = nan(size(boutonProfileInt,1),2);
     boutonProfile(:,2) = boutonProfileInt;
     boutonProfile(:,1) = boutonProfileInd;
 
-    axonProfileInt = figData.axonCrossProfile{cs}{ca}{cb};
-    axonProfileInd = (1:size(axonProfileInt,1)) - round(size(axonProfileInt,1)/2);
+    axonProfileInt = figData.localAxonCrossProfile{cs}{ca}{cb};
+    weight = figData.axonBrightnessProfileWeights{cs}{ca}(axonIndx,4); %#ok<FNDSB>
+    axonProfileInt = (axonProfileInt /weight);
+    [~,ind] = max(axonProfileInt);
+    axonProfileInd = (1:size(axonProfileInt,1)) - ind;
     axonProfile = nan(size(axonProfileInt,1),2);
     axonProfile(:,2) = axonProfileInt;
     axonProfile(:,1) = axonProfileInd;
-
-    backbone = figData.axonBrightnessProfile{cs}{ca}(:,1:2);
-    boutonIndx = find(backbone == figData.boutonCenter{cs}{ca}(ca,:));
-    axonIndx = find(backbone == figData.localAxonWidth{cs}{ca}{cb});
-
-    boutonThresh = figData.axonBrightnessProfileWeights{cs}{ca}(boutonIndx,4); %#ok<FNDSB>
-    axonThresh = figData.axonBrightnessProfileWeights{cs}{ca}(axonIndx,4); %#ok<FNDSB>
 end
 
 function outData = unshuffleOutput(hfig)
