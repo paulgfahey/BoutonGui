@@ -199,9 +199,18 @@ function perBoutonSummary(hfig)
                     cbc = figData.boutonCenter{i}{j};
                     cbcr = figData.boutonCross{i}{j}{k};
                     
+                    
                     cbcseg = figData.boutonCrossSegment{i}{j}{k};
                     lacseg = figData.localAxonCrossSegment{i}{j}{k};
                     
+                    cbcp = figData.boutonCrossProfile{i}{j}{k};
+                    lacp = figData.localAxonCrossProfile{i}{j}{k};
+                    
+                    cbw = figData.boutonWidth{i}{j}{k};
+                    law = figData.localAxonWidth{i}{j}{k};
+                    
+                    
+
                     %Create filtered versions of raw image at boundary z plane
                     boutonImage = figData.stackDataShuffled{i}(:,:,cbc(k,3));
                     

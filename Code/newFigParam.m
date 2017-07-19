@@ -118,18 +118,20 @@ function figData = newFigParam(hfig,~)
             figData.axonRegionCenter{i}{j} = [];
             
             for k = 1:100 % auto allows spots for 100 boutons per axon
-                %bouton area tracing
-                figData.boutonBoundary{i}{j}{k} = {};
-                figData.boutonMask{i}{j}{k} = [];
                 
-                %axon area tracing, corresponds to matched bouton
-                figData.axonBoundary{i}{j}{k} = {};
-                figData.axonMask{i}{j}{k} = {};
                 
                 %bouton perpendicular traces for calculating bouton width
                 figData.boutonCross{i}{j}{k} = {};
+                figData.boutonWidth{i}{j}{k} = {};
                 figData.boutonCrossProfile{i}{j}{k} = {};
-                figData.boutonCrossProfileMask{i}{j}{k} = {};
+                figData.boutonCrossSegment{i}{j}{k} = {};
+                
+                %axon perpendicular traces for calculating local axon width
+                figData.axonCross{i}{j}{k} = {};
+                figData.localAxonWidth{i}{j}{k} = {};
+                figData.localAxonCenter{i}{j}{k} = {};
+                figData.localAxonCrossProfile{i}{j}{k} = {};
+                figData.localAxonCrossSegment{i}{j}{k} = {};
             end
         end
     end
