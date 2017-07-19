@@ -233,9 +233,16 @@ function keyPress(hfig,events,~)
         set(hfig,'WindowButtonMotionFcn','');
     end
     
-    %ENTER AXON/BOUTON CROSS MODE 'D'
+    %ENTER AXON CROSS MODE 'D'
     if strcmp(events.Key,'d')
-        set(hfig,'Name','Click to Add boutons','NumberTitle','off')
+        set(hfig,'Name','Click to add local axon diameter','NumberTitle','off')
+        set(hfig,'WindowButtonDownFcn',{@axonCrossClick});
+        set(hfig,'WindowButtonMotionFcn','');
+    end
+    
+    %ENTER AXON/BOUTON CROSS MODE 'F'
+    if strcmp(events.Key,'f')
+        set(hfig,'Name','Click to add boutons','NumberTitle','off')
         set(hfig,'WindowButtonDownFcn',{@boutonCrossClick});
         set(hfig,'WindowButtonMotionFcn','');
     end

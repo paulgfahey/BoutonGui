@@ -25,20 +25,18 @@ function boutonCrossClick(hfig,~)
     else
         if ~any([cx cy] < 0) && ~any([cx cy] > figData.dims{cs})
             cbcs(end+1,:) = [cx, cy, figData.currentZ{cs}];
-             if size(cbcs,1) >= 4
+             if size(cbcs,1) >= 2
                 cbs(cb,:) = figData.boutonStatusMatrix;
-                [cbw,cbc(cb,:),cbcp,cbcseg] = segmentWidth(cbcs(3:4,:),hfig);
-                [law,lac,lacp,lacseg] = segmentWidth(cbcs(1:2,:),hfig);
+                [cbw,cbc(cb,:),cbcp,cbcseg] = segmentWidth(cbcs(1:2,:),hfig);
                 
                 figData.boutonWidth{cs}{ca}{cb} = cbw;
                 figData.boutonCrossProfile{cs}{ca}{cb} = cbcp;
                 figData.boutonCrossSegment{cs}{ca}{cb} = cbcseg;
-                figData.localAxonWidth{cs}{ca}{cb} = law;
-                figData.localAxonCenter{cs}{ca}{cb} = lac;
-                figData.localAxonCrossProfile{cs}{ca}{cb} = lacp;
-                figData.localAxonCrossSegment{cs}{ca}{cb} = lacseg;
-                
+
                 figData.currBouton{cs}{ca} = figData.currBouton{cs}{ca} +1;
+                
+                set(hfig,'Name','Click to add local axon diameter','NumberTitle','off')
+                set(hfig,'WindowButtonDownFcn',{@axonCrossClick});
             end
         end
     end
