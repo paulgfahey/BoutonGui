@@ -132,6 +132,8 @@ function figData = newFigParam(hfig,~)
                 figData.localAxonCenter{i}{j}{k} = {};
                 figData.localAxonCrossProfile{i}{j}{k} = {};
                 figData.localAxonCrossSegment{i}{j}{k} = {};
+                
+                figData.boutonPeakInt{i}{j}{k} = {};
             end
         end
     end

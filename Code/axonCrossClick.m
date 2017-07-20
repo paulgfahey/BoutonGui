@@ -17,7 +17,7 @@ function axonCrossClick(hfig,~)
         if ~isempty(klist)
             for k = 1:size(klist,1)
                 kpair = [k,k-1+2*mod(k,2)];
-                cacs(kpair) = [];
+                cacs(kpair,:) = [];
                 disp('axon cross deleted')
             end
         end

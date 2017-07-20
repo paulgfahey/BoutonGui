@@ -52,8 +52,13 @@ function [hfig] = axonProfile(hfig)
     intTrace = inti';
     figData.axonBrightnessProfile{cs}{ca} = [xi,yi,zi,intTrace];
     
-    %use median filter to establish and subtract local baseline
     baseline = medfilt1(intTrace,30);
+    
+    interpBackbone = interpPeaks(hfig,intTrace,baseline);
+    figData.axonBrightnessProfilePeaksInterp{cs}{ca} = [xi,yi,zi,interpBackbone];
+    
+    %use median filter to establish and subtract local baseline
+    
     intTrace = intTrace - baseline';
     
     %adjust trace to avoid negative values, save absolute minimum
@@ -76,5 +81,37 @@ function [hfig] = axonProfile(hfig)
     autoPeaks(isnan(peaks),:) = nan;
     figData.axonWeightedBrightnessPeaks{cs}{ca} = autoPeaks;
     
+    guidata(hfig,figData);
+end
+
+function interpBackbone = interpPeaks(hfig, rawBrightnessProfile, medFilteredProfile)
+    figData = guidata(hfig);
+    
+    %remove gaps from skipTrace
+    [imlabel,totalLabels] = bwlabel(isnan(rawBrightnessProfile));
+    for j = 1:totalLabels
+        indfirst = find((imlabel == j),1,'first');
+        indlast = find((imlabel == j),1,'last');
+        sizePeak = length(find(imlabel == j));
+        indprev = rawBrightnessProfile(indfirst-1);
+        indpost = rawBrightnessProfile(indlast+1);
+        interpGap = interp1([1,sizePeak+2],[indprev,indpost],1:sizePeak+2);
+        rawBrightnessProfile(indfirst:indlast) = interpGap(2:end-1);
+    end
+    
+    %remove peaks and plug gaps with interpolated values
+    noPeaks = rawBrightnessProfile;
+    noPeaks(noPeaks>medFilteredProfile') = nan;
+    [imlabel,totalLabels] = bwlabel(isnan(noPeaks));
+    for j = 1:totalLabels
+        indfirst = find((imlabel == j),1,'first');
+        indlast = find((imlabel == j),1,'last');
+        sizePeak = length(find(imlabel == j));
+        indprev = noPeaks(indfirst-1);
+        indpost = noPeaks(indlast+1);
+        interpPeak = interp1([1,sizePeak+2],[indprev,indpost],1:sizePeak+2);
+        noPeaks(indfirst:indlast) = interpPeak(2:end-1);
+    end
+    interpBackbone = noPeaks;
     guidata(hfig,figData);
 end

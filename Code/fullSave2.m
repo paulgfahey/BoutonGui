@@ -7,13 +7,13 @@ function fullSave2(hfig)
     stackAxonSummary(hfig);
     perAxonSummary(hfig);
     perBoutonSummary(hfig);
-%     outData = unshuffleOutput(hfig); %#ok<NASGU>
+    outData = unshuffleOutput(hfig); %#ok<NASGU>
     
     cd(resultsFolder)  
     filename = strrep(figData.mouseFileName,'.mat','');
     t = datetime('now','TimeZone','local');
     ts = datestr(t,'yymmdd_hhMMss',2000);
-%     save(['boutonfinalsave_' filename '_' ts '.mat'],'figData','outData','-v7.3');
+    save(['boutonfinalsave_' filename '_' ts '.mat'],'figData','outData','-v7.3');
     cd(sourceFolder)
     guidata(hfig, figData)
 end
@@ -239,7 +239,7 @@ function perBoutonSummary(hfig)
                     backbone = backbone(backbone(:,1) > xmin & backbone(:,1) < xmax,:);
                     line(backbone(:,1)-xmin+1,backbone(:,2)-ymin+1,'Color','b');
                     axis([0 size(boutonImageROI,1) 0 size(boutonImageROI,2)]);
-                    title(['clicked overlays'])
+                    title('clicked overlays')
                     formatImage
                     
                     %plot bouton and axon cross int with thresholds
@@ -260,6 +260,7 @@ function perBoutonSummary(hfig)
                     backbone = figData.axonBrightnessProfileWeighted{i}{j};
                     backbone = backbone(backbone(:,2) > ymin & backbone(:,2) < ymax,:);
                     backbone = backbone(backbone(:,1) > xmin & backbone(:,1) < xmax,:);
+                    figData.boutonPeakInt{i}{j}{k} = max(backbone(:,4));
                     backbone = backbone(:,4)/figData.axonWeightedBrightnessMedian{i}{j};
                     hold on
                     plot(backbone)
@@ -273,7 +274,7 @@ function perBoutonSummary(hfig)
                     image(imadjust(boutonImageROIRot,[0 figData.high_in{i}],[0 figData.high_out{i}]));
                     hold on
                     formatImage
-                    title(['rotated']);
+                    title('rotated');
                    
                 end
                 set(boutonSummary, 'Position', get(0, 'Screensize'));
@@ -322,7 +323,6 @@ function outData = unshuffleOutput(hfig)
     for j = 1:figData.maxAxon
         outData.boutonPresence{j} = nan(figData.maxBouton(j),figData.numStacks);
         outData.exclude{j} = nan(figData.maxBouton(j),figData.numStacks);
-        outData.abSwitch{j} = zeros(figData.maxBouton(j),figData.numStacks);
         outData.boutonInt{j} = nan(figData.maxBouton(j),3,figData.numStacks);
         outData.boutonWidth{j} = nan(figData.maxBouton(j),3,figData.numStacks);
 
@@ -330,21 +330,20 @@ function outData = unshuffleOutput(hfig)
             i = figData.stackKey(m);
 
             outData.axonLengths(j,i) = figData.axonLengths{m}{j};
-
+            
             outData.boutonPresence{j}(1:size(figData.boutonStatus{m}{j},1),i) = any(figData.boutonStatus{m}{j}(:,1:2),2);
             outData.exclude{j}(:,i) = figData.boutonStatus{m}{j}(:,3);
-            outData.abSwitch{j}(:,i) = outData.boutonPresence{j}(:,i)==1 & (figData.boutonStatus{m}{j}(:,1) ~= figData.boutonStatus{m}{j}(:,2));
-
+            
 
             for k = 1:figData.maxBouton(j)
                 if outData.exclude{j}(k,i) == 0 && all(figData.boutonCount(j,k,:))
-                outData.boutonInt{j}(k,1,i) = figData.boutonMaxInt{m}{j}{k};
+                outData.boutonInt{j}(k,1,i) = figData.boutonPeakInt{m}{j}{k};
                 outData.boutonInt{j}(k,2,i) = figData.axonWeightedBrightnessMedian{m}{j};
                 outData.boutonInt{j}(k,3,i) = outData.boutonInt{j}(k,1,i) / outData.boutonInt{j}(k,2,i);
 
-                outData.boutonWidth{j}(k,1,i) = figData.boutonCrossOnlyLength{m}{j}{k};
-                outData.boutonWidth{j}(k,2,i) = figData.axonCrossOnlyLength{m}{j}{k};
-                outData.boutonWidth{j}(k,3,i) = figData.boutonAxonWidthRatio{m}{j}{k};
+                outData.boutonWidth{j}(k,1,i) = figData.boutonWidth{m}{j}{k};
+                outData.boutonWidth{j}(k,2,i) = mean(figData.localAxonWidth{m}{j}{k});
+                outData.boutonWidth{j}(k,3,i) = outData.boutonWidth{j}(k,1,i) / outData.boutonWidth{j}(k,2,i);
                 end
             end
         end
@@ -361,15 +360,4 @@ function outData = unshuffleOutput(hfig)
     guidata(hfig,figData);
 end
 
-function [axisrange] = boutonWindowPlotRange(boutonBackboneSegment)
-center = round(median(find(~isnan(boutonBackboneSegment(:,1)))));
-xmin = center - 15;
-xmax = center + 15;
-if xmin < 0
-    xmin = 0;
-end
-if xmax > length(boutonBackboneSegment(:,1))
-    xmax = length(boutonBackboneSegment(:,1));
-end
-axisrange = [xmin xmax 0 12];
-end
+
