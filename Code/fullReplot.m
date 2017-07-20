@@ -130,25 +130,6 @@ function boutonPlot(hfig)
             line(cacr(j-1:j,1),cacr(j-1:j,2),'Color','y','LineStyle','-','linewidth',1)
         end
     end
-
-
-    cbbs = figData.boutonBoundary{cs}{ca};
-    if ~isempty(cbbs)
-        for i = 1:size(cbbs,2)
-            cbb = figData.boutonBoundary{cs}{ca}{i};
-            if ~isempty(cbb)
-                line(cbb(:,2),cbb(:,1),'Color','r','LineStyle','-','linewidth',1)
-            end
-        end
-    end
-    
-    arb = figData.axonBoundary{cs}{ca};
-    if ~isempty(arb)
-        carb = figData.axonBoundary{cs}{ca}{cb};
-        if ~isempty(carb)
-            line(carb(:,2),carb(:,1),'Color',[.9 .5 .5],'LineStyle','-','linewidth',1)
-        end
-    end
     
     autoPeaks = figData.axonWeightedBrightnessPeaks{cs}{ca};
     if ~isempty(autoPeaks)

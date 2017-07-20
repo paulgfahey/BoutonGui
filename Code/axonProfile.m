@@ -71,17 +71,17 @@ function [hfig] = axonProfile(hfig)
     %add segments with < 2* median background to skipAxonTrace
     threshIntTrace= intTrace';
     threshIntTrace = interpGaps(hfig,threshIntTrace);
-    threshIntTrace(baseline2 < 5*figData.backgroundMeanInt{cs}) = nan;
-    hfig = skipGaps(hfig,threshIntTrace,xi,yi,zi);
+    threshIntTrace(baseline2 < 5) = nan;
+    [threshIntTrace,hfig] = skipGaps(hfig,threshIntTrace,xi,yi,zi);
     figData = guidata(hfig);
     figData.axonBrightnessProfileWeightedThresh{cs}{ca} = [xi,yi,zi,threshIntTrace'];
     
     
     %find remaining points with intensity >1.75 greater than local median intensity
-    peaks = threshIntTrace;
-    peaks(peaks>1.75) = nan;
+    peaks = threshIntTrace ./ baseline2;
+    peaks = interpGaps(hfig,peaks);
+    peaks(peaks<1.75) = nan;
     autoPeaks = [xi,yi,zi,peaks'];
-    autoPeaks(isnan(peaks),:) = nan;
     figData.axonWeightedBrightnessPeaks{cs}{ca} = autoPeaks;
     
     guidata(hfig,figData);
@@ -96,8 +96,17 @@ function interpBackbone = interpGaps(hfig, profile)
         indfirst = find((imlabel == j),1,'first');
         indlast = find((imlabel == j),1,'last');
         sizeGap = length(find(imlabel == j));
-        indprev = profile(indfirst-1);
-        indpost = profile(indlast+1);
+        if indfirst <= 1
+            indprev = profile(indlast+1);
+        else
+            indprev = profile(indfirst-1);
+        end
+        
+        if indlast >= length(profile)
+            indpost = indprev;
+        else
+            indpost = profile(indlast+1);
+        end
         interpGap= interp1([1,sizeGap+2],[indprev,indpost],1:sizeGap+2);
         profile(indfirst:indlast) = interpGap(2:end-1);
     end
@@ -105,26 +114,27 @@ function interpBackbone = interpGaps(hfig, profile)
     guidata(hfig,figData);
 end
 
-function hfig = skipGaps(hfig,profile,xi,yi,zi)
+function [profile,hfig] = skipGaps(hfig,profile,xi,yi,zi)
     %add nan gaps to skip axon trace
     figData = guidata(hfig);
     [cs,ca,~,~,~] = currentOut(hfig);
     
     tsa = [];
-    traceLengthSkipped = figData.traceLengthSkipped{cs}{ca};
+    traceLengthSkipped = figData.axonSkipTraceLength{cs}{ca};
+    csa = figData.axonSkipTraceSnap{cs}{ca};
 
     [imlabel,totalLabels] = bwlabel(isnan(profile));
     for j = 1:totalLabels
         indfirst = find((imlabel == j),1,'first');
         indlast = find((imlabel == j),1,'last');
-        skipfirst = find(ismember(profile,[xi(indfirst),yi(indfirst),zi(indfirst)],'rows'));
-        skiplast = find(ismember(profile,[xi(indlast),yi(indlast),zi(indlast)],'rows'));
-        tsa(end+1,:) = [skipfirst,skiplast]; %#ok<*AGROW>
-        profile(skipfirst:skiplast) = nan;
-        skipped = [xi(skipfirst:skiplast),yi(skipfirst:skiplast)];
+        tsa(end+1,:) = [indfirst,indlast]; %#ok<*AGROW>
+        profile(indfirst:indlast) = nan;
+        skipped = [xi(indfirst:indlast),yi(indfirst:indlast),zi(indfirst:indlast)];
+        csa{end+1} = skipped;
         traceLengthSkipped = traceLengthSkipped + sum(sqrt(sum(diff(skipped(:,1:2)).^2,2)));
     end
     
-    figData.threshSkippedAxon{cs}{ca} = tsa;
+    figData.axonSkipTraceLength{cs}{ca} = tsa;
+    figData.axonSkipTraceSnap{cs}{ca} = csa;
     guidata(hfig,figData)
 end
