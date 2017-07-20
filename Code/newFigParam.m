@@ -95,7 +95,7 @@ function figData = newFigParam(hfig,~)
             figData.axonTraceSnapLength{i}{j} = [];
             
             %for skipped region tracing/snapping
-            figData.axonSkipTrace{i}{j} = {};
+            figData.axonSkipTrace{i}{j} = [];
             figData.axonSkipTraceSnap{i}{j} = {};
             figData.axonSkipTraceLength{i}{j} = [];
             

@@ -39,4 +39,7 @@ function hfig = snapAndRemoveSkip(hfig)
     figData.axonTraceSnapSkipped{cs}{ca} = snapSkipped;
     figData.axonSkipTraceSnapLength{cs}{ca} = traceLengthSkipped;
     guidata(hfig,figData);
+    hfig = axonProfile(hfig);
+    figData = guidata(hfig);
+    guidata(hfig,figData);
 end

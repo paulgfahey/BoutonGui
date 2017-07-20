@@ -68,7 +68,6 @@ function [hfig,figData] = snapToBackbone(hfig,trace)
     guidata(hfig,figData)
     
     snapAndRemoveSkip(hfig);
-    hfig = axonProfile(hfig);
     figData = guidata(hfig);
     guidata(hfig,figData)
     toc
