@@ -6,7 +6,7 @@ function axonSkipClick(hfig,~)
     [cs,ca,~,cx,cy] = currentOut(hfig);
     csa = figData.axonSkipTrace{cs}{ca}; %current skip axon being traced
     
-    if isempty(csa)
+    if isempty(csa) && ~strcmp(buttonPressed,'alt')
             csa = [cx, cy, figData.currentZ{cs}];
             figData.axonSkipTraceSnap{cs}{ca} = csa;
             
