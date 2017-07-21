@@ -1,4 +1,4 @@
-function [hfig,figData] = snapToBackbone(hfig,trace)
+function [hfig] = snapToBackbone(hfig,trace)
     %automatically centers backbone trace on local high intensity points
     %standardizes material for calculating intensity profile and median
     

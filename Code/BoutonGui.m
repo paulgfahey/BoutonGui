@@ -198,8 +198,8 @@ function keyPress(hfig,events,~)
     
     %SNAP BACKBONE 'C'
     if strcmp(events.Key,'c')
-        [hfig,figData] = snapToBackbone(hfig,figData.axonTrace{cs}{ca});
-        guidata(hfig,figData);
+        [hfig] = snapToBackbone(hfig,figData.axonTrace{cs}{ca});
+        figData = guidata(hfig);
         disp('Trace Snapped');
     end
     
@@ -208,7 +208,7 @@ function keyPress(hfig,events,~)
     figData.currAxon{cs} = ca;
     figData.currBouton{cs}{ca} = cb;
     guidata(hfig,figData);
-    if any(strcmp(events.Key,{'leftarrow','rightarrow','uparrow','downarrow','equal','hyphen','9','0','o','p','m','comma','q','w','e','r','u','i','j','k','c'}))
+    if any(strcmp(events.Key,{'leftarrow','rightarrow','uparrow','downarrow','equal','hyphen','9','0','o','p','m','comma','q','w','e','r','u','i','j','k'}))
         fullReplot(hfig);
     end
     

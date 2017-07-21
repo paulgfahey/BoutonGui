@@ -2,6 +2,7 @@ function [hfig] = axonProfile(hfig)
     %calculates axon intensity profile from snapped trace, autodetects
     %peaks above 1.75x local median intensity
     figData = guidata(hfig);
+    [cs,ca,~,~,~] = currentOut(hfig);
     
     n = 1; %rough distance between interpolated points
     
@@ -44,7 +45,7 @@ function [hfig] = axonProfile(hfig)
     figData.axonBrightnessProfile{cs}{ca} = [xi,yi,zi,intTrace];
     
     %median filter raw profile
-    baseline1 = medfilt1(interpBackbone,101);
+    baseline1 = medfilt1(intTrace,101);
     
     %remove peaks using <1.2* local baseline threshold, repeat median filter on axon only
     noPeaks = intTrace;
@@ -65,7 +66,7 @@ function [hfig] = axonProfile(hfig)
     hfig = autoSkipAxonInt(hfig);
     
     %use manual clicked points to skip regions within ROI
-    hfig = snapAndRemoveManualSkip(hfig);
+    hfig = roiSnapAndSkip(hfig);
     
     %use length of remaining regions to exclude axon segments too short
     hfig = autoSkipAxonLength(hfig);
@@ -73,21 +74,22 @@ function [hfig] = axonProfile(hfig)
     
     %calculate length of trace skipped
     profile = figData.axonTraceSnapSkipped{cs}{ca};
+    traceLengthSkipped = 0;
     xm = profile(:,1);
     ym = profile(:,2);
     [imlabel,totalLabels] = bwlabel(isnan(profile(:,4)));
     for j = 1:totalLabels
         indfirst = find((imlabel == j),1,'first');
         indlast = find((imlabel == j),1,'last');
-        skipped = [xm(indfirst:indlast);ym(indfirst:indlast)];
+        skipped = [xm(indfirst:indlast),ym(indfirst:indlast)];
         traceLengthSkipped = traceLengthSkipped + sum(sqrt(sum(diff(skipped).^2,2)));
     end
     figData.axonSkipTraceLength{cs}{ca} = traceLengthSkipped;
     
     %detect suggested points with intensity >1.75 greater than local median intensity
-    peaks = intTrace./baseline2';
+    peaks = figData.axonTraceSnapSkipped{cs}{ca}(:,4);
     peaks(peaks<1.75) = nan;
-    autoPeaks = [xi,yi,zi,peaks'];
+    autoPeaks = [xi,yi,zi,peaks];
     figData.axonWeightedBrightnessPeaks{cs}{ca} = autoPeaks;
     
     guidata(hfig,figData);

@@ -1,4 +1,5 @@
 function clearAxon(hfig)
+    figData = guidata(hfig);
     [cs,ca,~,~,~] = currentOut(hfig);
     figData.axonTrace{cs}{ca} = {};
     figData.axonTraceSnap{cs}{ca} = {};
