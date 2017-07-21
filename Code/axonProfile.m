@@ -65,7 +65,7 @@ function [hfig] = axonProfile(hfig)
     hfig = autoSkipAxonInt(hfig);
     
     %use manual clicked points to skip regions within ROI
-    hfig = snapAndRemoveSkip(hfig);
+    hfig = snapAndRemoveManualSkip(hfig);
     
     %use length of remaining regions to exclude axon segments too short
     hfig = autoSkipAxonLength(hfig);
