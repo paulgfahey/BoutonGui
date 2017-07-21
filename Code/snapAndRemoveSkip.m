@@ -9,6 +9,11 @@ function hfig = snapAndRemoveSkip(hfig)
     lastSegment = find(mod(1:size(csa,1),2)==0,1,'last');
     segments = csa(1:lastSegment,:);
 
+    traceLengthSkipped = figData.axonSkipTraceSnapLength{cs}{ca};
+    
+    
+    
+    
     %snapped backbone trace
     snapped = figData.axonTraceSnap{cs}{ca};
     snapSkipped = snapped;
