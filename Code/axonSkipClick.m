@@ -30,10 +30,9 @@ function axonSkipClick(hfig,~)
     end
     
     figData.axonSkipTrace{cs}{ca} = csa;
-    guidata(hfig,figData);
     
-    hfig = snapAndRemoveSkip(hfig);  %shifts skipped region to axon backbone
-    figData = guidata(hfig);
     guidata(hfig,figData);
+    hfig = axonProfile(hfig);  %shifts skipped region to axon backbone
+
     fullReplot(hfig);
 end

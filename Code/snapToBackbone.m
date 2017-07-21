@@ -66,10 +66,7 @@ function [hfig,figData] = snapToBackbone(hfig,trace)
     figData.axonTraceSnap{cs}{ca} = snapped;
     figData.axonTraceSnapLength{cs}{ca} = sum(sqrt(sum(diff(snapped(:,1:2)).^2,2)));
     guidata(hfig,figData)
-    
-    snapAndRemoveSkip(hfig);
-    figData = guidata(hfig);
-    guidata(hfig,figData)
+    hfig = axonProfile(hfig);
     toc
 end
 

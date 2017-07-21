@@ -2,7 +2,6 @@ function [hfig] = axonProfile(hfig)
     %calculates axon intensity profile from snapped trace, autodetects
     %peaks above 1.75x local median intensity
     figData = guidata(hfig);
-    [cs,ca,~,~,~] = currentOut(hfig);
     
     n = 1; %rough distance between interpolated points
     
@@ -40,101 +39,45 @@ function [hfig] = axonProfile(hfig)
        inti(ind) = int;
     end
     
-    %set values within skipped regions to nan
-    csa = figData.axonSkipTrace{cs}{ca};
-    for j = 2:2:size(csa,1)
-       xj = sort(csa(j-1:j,1));
-       yj = sort(csa(j-1:j,2));
-       inti( xi>xj(1) & xi<xj(2) & yi>yj(1) & yi<yj(2)) = nan;
-    end
-    
-    %raw profile with gaps
+    %raw profile, no gaps
     intTrace = inti';
     figData.axonBrightnessProfile{cs}{ca} = [xi,yi,zi,intTrace];
     
-    %interpolate across skip gaps
-    interpBackbone = interpGaps(hfig,intTrace);
+    %median filter raw profile
+    baseline1 = medfilt1(interpBackbone,101);
     
-    %use median filter to find local baseline
-    baseline = medfilt1(interpBackbone,100);
-    figData.axonBrightnessProfileBaseline{cs}{ca} = [xi,yi,zi,baseline'];
-    figData.axonBrightnessProfileWeighted{cs}{ca} = [xi,yi,zi,intTrace./baseline];
-    
-    %remove peaks using 1.2* local baseline threshold
+    %remove peaks using <1.2* local baseline threshold, repeat median filter on axon only
     noPeaks = intTrace;
-    noPeaks(noPeaks > 1.2*baseline') = nan;
+    noPeaks(noPeaks > 1.2*baseline1') = nan;
+    
+    %interpolate across missing peaks, repeat median filter on axon only
     noPeaksInterp = interpGaps(hfig,noPeaks);
-    baseline2 = medfilt1(noPeaksInterp,100);
+    baseline2 = medfilt1(noPeaksInterp,41);
     
+    %save baseline as local median filtered axon intensity
+    figData.axonBrightnessProfileBaseline{cs}{ca} = [xi,yi,zi,baseline2'];
     
+    %save weighted,unskipped profile
+    figData.axonBrightnessProfileWeighted{cs}{ca} = [xi,yi,zi,intTrace./baseline2'];
     
-    %add segments with < 2* median background to skipAxonTrace
-    threshIntTrace= intTrace';
-    threshIntTrace = interpGaps(hfig,threshIntTrace);
-    threshIntTrace(baseline2 < 5) = nan;
-    [threshIntTrace,hfig] = skipGaps(hfig,threshIntTrace,xi,yi,zi);
+    %use baseline to autoskip regions below adjustable threshold
+    guidata(hfig,figData);
+    hfig = autoSkipAxonInt(hfig);
+    
+    %use manual clicked points to skip regions within ROI
+    hfig = snapAndRemoveSkip(hfig);
+    
+    %use length of remaining regions to exclude axon segments too short
+    hfig = autoSkipAxonLength(hfig);
     figData = guidata(hfig);
-    figData.axonBrightnessProfileWeightedThresh{cs}{ca} = [xi,yi,zi,threshIntTrace'];
     
-    
-    %find remaining points with intensity >1.75 greater than local median intensity
-    peaks = threshIntTrace ./ baseline2;
-    peaks = interpGaps(hfig,peaks);
+    %detect suggested points with intensity >1.75 greater than local median intensity
+    peaks = intTrace./baseline2';
     peaks(peaks<1.75) = nan;
     autoPeaks = [xi,yi,zi,peaks'];
     figData.axonWeightedBrightnessPeaks{cs}{ca} = autoPeaks;
     
     guidata(hfig,figData);
-end
-
-function interpBackbone = interpGaps(hfig, profile)
-    %interpolate across nan gaps in intensity trace    
-    figData = guidata(hfig);
     
-    [imlabel,totalLabels] = bwlabel(isnan(profile));
-    for j = 1:totalLabels
-        indfirst = find((imlabel == j),1,'first');
-        indlast = find((imlabel == j),1,'last');
-        sizeGap = length(find(imlabel == j));
-        if indfirst <= 1
-            indprev = profile(indlast+1);
-        else
-            indprev = profile(indfirst-1);
-        end
-        
-        if indlast >= length(profile)
-            indpost = indprev;
-        else
-            indpost = profile(indlast+1);
-        end
-        interpGap= interp1([1,sizeGap+2],[indprev,indpost],1:sizeGap+2);
-        profile(indfirst:indlast) = interpGap(2:end-1);
-    end
-    interpBackbone = profile;
-    guidata(hfig,figData);
-end
-
-function [profile,hfig] = skipGaps(hfig,profile,xi,yi,zi)
-    %add nan gaps to skip axon trace
-    figData = guidata(hfig);
-    [cs,ca,~,~,~] = currentOut(hfig);
-    
-    tsa = [];
-    traceLengthSkipped = figData.axonSkipTraceLength{cs}{ca};
-    csa = figData.axonSkipTraceSnap{cs}{ca};
-
-    [imlabel,totalLabels] = bwlabel(isnan(profile));
-    for j = 1:totalLabels
-        indfirst = find((imlabel == j),1,'first');
-        indlast = find((imlabel == j),1,'last');
-        tsa(end+1,:) = [indfirst,indlast]; %#ok<*AGROW>
-        profile(indfirst:indlast) = nan;
-        skipped = [xi(indfirst:indlast),yi(indfirst:indlast),zi(indfirst:indlast)];
-        csa{end+1} = skipped;
-        traceLengthSkipped = traceLengthSkipped + sum(sqrt(sum(diff(skipped(:,1:2)).^2,2)));
-    end
-    
-    figData.axonSkipTraceLength{cs}{ca} = tsa;
-    figData.axonSkipTraceSnap{cs}{ca} = csa;
-    guidata(hfig,figData)
+    fullReplot(hfig);
 end

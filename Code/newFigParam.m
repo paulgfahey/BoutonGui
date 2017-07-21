@@ -55,7 +55,6 @@ function figData = newFigParam(hfig,~)
         for j = 1:size(figData.stackDataShuffled{i},3)
             figData.stackDataShuffledProcessed{i}(:,:,j) = imfilter(figData.stackDataShuffled{i}(:,:,j),gausswin(3)*gausswin(3)');
         end
-        figData.thresh = 0.01;
         
         %size and position variables
         figData.cs = 1;     %current stack
@@ -81,7 +80,6 @@ function figData = newFigParam(hfig,~)
         figData.currAxon{i} = 1;
 
         %for establishing background intensity
-        figData.backgroundThresh = 1.5;
         figData.backgroundInt{i} = {};
         figData.backgroundZ{i} = {};
         figData.backgroundMask{i} = {};
