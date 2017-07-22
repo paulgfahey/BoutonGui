@@ -89,23 +89,23 @@ function figData = newFigParam(hfig,~)
         for j = 1:25 %automatically allows spots for 25 axons per stack
             %for axon backbone tracing/snapping
             figData.axonTrace{i}{j}={};
-            figData.axonTraceSnap{i}{j} = {};            
-            figData.axonTraceSnapLength{i}{j} = [];
+            figData.axonTraceSnap{i}{j} = {};        
             
-            %for skipped region tracing/snapping
+            %manually clicked roi traces for skipping
             figData.axonSkipTrace{i}{j} = [];
-            figData.axonSkipTraceSnap{i}{j} = {};
-            figData.axonSkipTraceLength{i}{j} = [];
             
-            %combination of above
+            %axon trace with roi and auto skipping performed
             figData.axonTraceSnapSkipped{i}{j} = {};
             
+            %raw length, length of skipped trace, and remaining length
+            figData.axonTraceSnapLength{i}{j} = [];
+            figData.axonSkipTraceLength{i}{j} = [];
+            figData.axonIncludedTraceLength{i}{j} = {};
+            
             %axon intensity profile analysis
-            figData.axonBrightnessNormBaseline{i}{j} = {};
             figData.axonBrightnessProfile{i}{j} = {};
-            figData.axonBrightnessProfileWeights{i}{j} = {};
+            figData.axonBrightnessProfileBaseline{i}{j} = {};
             figData.axonBrightnessProfileWeighted{i}{j} = {};
-            figData.axonWeightedBrightnessMedian{i}{j} = {};
             figData.axonWeightedBrightnessPeaks{i}{j} = {};
             
             %bouton properties
@@ -113,10 +113,13 @@ function figData = newFigParam(hfig,~)
             figData.boutonCenter{i}{j} = [];
             figData.boutonStatus{i}{j} = [];
             
+            %axon auto exclusion thresholds
+            figData.autoSkipAxonIntThresh{i}{j} = 5;
+            figData.autoSkipAxonLengthThresh{i}{j} = 100;
+            
             figData.axonRegionCenter{i}{j} = [];
             
             for k = 1:100 % auto allows spots for 100 boutons per axon
-                
                 
                 %bouton perpendicular traces for calculating bouton width
                 figData.boutonCross{i}{j}{k} = {};

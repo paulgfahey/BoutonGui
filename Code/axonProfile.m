@@ -72,6 +72,9 @@ function [hfig] = axonProfile(hfig)
     hfig = autoSkipAxonLength(hfig);
     figData = guidata(hfig);
     
+    %calculate raw trace length
+    figData.axonTraceSnapLength{cs}{ca} = sum(sqrt(sum(diff([xi;yi]).^2,2)));
+    
     %calculate length of trace skipped
     profile = figData.axonTraceSnapSkipped{cs}{ca};
     traceLengthSkipped = 0;
@@ -85,6 +88,9 @@ function [hfig] = axonProfile(hfig)
         traceLengthSkipped = traceLengthSkipped + sum(sqrt(sum(diff(skipped).^2,2)));
     end
     figData.axonSkipTraceLength{cs}{ca} = traceLengthSkipped;
+    
+    %calculate remaining axon trace length
+    figData.axonIncludedTraceLength{cs}{ca} = figData.axonTraceSnapLength{cs}{ca} - traceLengthSkipped;
     
     %detect suggested points with intensity >1.75 greater than local median intensity
     peaks = figData.axonTraceSnapSkipped{cs}{ca}(:,4);
