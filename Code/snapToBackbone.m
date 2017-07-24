@@ -37,6 +37,7 @@ function [hfig] = snapToBackbone(hfig,trace)
     xj = xinterp(1:end-1)+diff(xinterp)/2;  
     yj = yinterp(1:end-1)+diff(yinterp)/2;
     zj = zinterp(1:end-1);
+    intj = nan(1,size(xj,1));
     
     %perpendicular line segment at interp centers with length dependent on
     %spread multiplier
@@ -60,9 +61,10 @@ function [hfig] = snapToBackbone(hfig,trace)
         [~,ind] = max(profile);
         xj(i) = round(xl(ind));
         yj(i) = round(yl(ind));
+        intj(i) = figData.stackDataShuffled{cs}(yj(i),xj(i),zj(i));
     end
     
-    snapped = [xj,yj,zj];
+    snapped = [xj,yj,zj,intj'];
     figData.axonTraceSnap{cs}{ca} = snapped;
     figData.axonTraceSnapLength{cs}{ca} = sum(sqrt(sum(diff(snapped(:,1:2)).^2,2)));
     guidata(hfig,figData)
@@ -74,7 +76,7 @@ function [profile] = pickBlob(hfig,plane)
 %finds largest blob in interpolated segment, sets all outside points to nan
     figData = guidata(hfig);
     [cs,~,~,~,~] = currentOut(hfig);
-    plane(plane < figData.backgroundThresh*figData.backgroundMeanInt{cs}) = nan; %exclude values under Thresh * MeanBackgroundInt
+        plane(plane < figData.backgroundThreshUsed{cs}) = nan; 
     [imlabel,totalLabels] = bwlabel(~isnan(plane));
     sizeBlob = zeros(1,totalLabels);
     for j = 1:totalLabels

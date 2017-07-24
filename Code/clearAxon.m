@@ -11,6 +11,7 @@ function clearAxon(hfig)
     figData.axonBrightnessProfileWeighted{cs}{ca} = {};
     figData.axonWeightedBrightnessMedian{cs}{ca} = {};
     figData.axonWeightedBrightnessPeaks{cs}{ca} = {};
+    disp('axon cleared')
     guidata(hfig,figData);
     fullReplot(hfig);
 end

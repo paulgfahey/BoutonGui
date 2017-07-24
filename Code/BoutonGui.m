@@ -37,7 +37,7 @@ end
 
 function mouseWheel(hfig,events,~)
 figData = guidata(hfig);
-    [cs,~,~,~,~] = currentOut(hfig);
+    [cs,ca,~,~,~] = currentOut(hfig);
     buttonPressed = get(hfig,'CurrentCharacter');
     % PRESS 1 TO ZOOM WITH MOUSE SCROLL WHEEL
     if strcmp(buttonPressed,'1')
@@ -49,11 +49,19 @@ figData = guidata(hfig);
         end
     % PRESS 2 TO CHANGE THRESHOLD SENSITIVITY WITH MOUSE SCROLL WHEEL
     elseif strcmp(buttonPressed,'2')
-        if figData.thresh > 0.001 && events.VerticalScrollCount < 0
-            figData.thresh = figData.thresh * .9;
+        if figData.autoSkipAxonIntThresh{cs}{ca} > 0.001 && events.VerticalScrollCount < 0
+            figData.autoSkipAxonIntThresh{cs}{ca} = figData.autoSkipAxonIntThresh{cs}{ca} - 1;
+            guidata(hfig,figData);
+            hfig = axonProfile(hfig);
+            figData = guidata(hfig);
+            disp(['thresh = ' num2str(figData.autoSkipAxonIntThresh{cs}{ca}) ', ' (num2str(round(figData.autoSkipAxonIntThresh{cs}{ca} ./ figData.backgroundMeanInt{cs}))) 'x mean background int']);
         end
-        if figData.thresh * 1.1 < 1 && events.VerticalScrollCount > 0
-            figData.thresh = figData.thresh * 1.1;
+        if events.VerticalScrollCount > 0
+            figData.autoSkipAxonIntThresh{cs}{ca} = figData.autoSkipAxonIntThresh{cs}{ca} + 1;
+            guidata(hfig,figData);
+            hfig = axonProfile(hfig);
+            figData = guidata(hfig);
+            disp(['thresh = ' num2str(figData.autoSkipAxonIntThresh{cs}{ca}) ', ' (num2str(round(figData.autoSkipAxonIntThresh{cs}{ca} ./ figData.backgroundMeanInt{cs}))) 'x mean background int']);
         end
     % PRESS 3 TO SCROLL VERTICALLY WITH MOUSE SCROLL WHEEL
     elseif strcmp(buttonPressed,'3')

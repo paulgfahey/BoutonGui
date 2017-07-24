@@ -28,6 +28,8 @@ function backgroundClick(hfig,~)
         allInts = [allInts;figData.backgroundInt{cs}{j}];
     end
     figData.backgroundMeanInt{cs} = mean(allInts);
+    figData.backgroundMedianInt{cs} = median(allInts);
+    figData.backgroundThreshUsed{cs} = max([figData.backgroundMeanInt{cs} * 2, 2]);
     plot(bounds{1}(:,2), bounds{1}(:,1),'r')
     guidata(hfig,figData);
 end

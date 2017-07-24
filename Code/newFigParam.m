@@ -85,6 +85,10 @@ function figData = newFigParam(hfig,~)
         figData.backgroundMask{i} = {};
         figData.backgroundBoundary{i} = {};
         figData.backgroundMeanInt{i} = [];
+        figData.backgroundMedianInt{i} = [];
+        figData.backgroundThreshUsed{i} = [];
+        
+        
         
         for j = 1:25 %automatically allows spots for 25 axons per stack
             %for axon backbone tracing/snapping
@@ -95,7 +99,7 @@ function figData = newFigParam(hfig,~)
             figData.axonSkipTrace{i}{j} = [];
             
             %axon trace with roi and auto skipping performed
-            figData.axonTraceSnapSkipped{i}{j} = {};
+            figData.axonTraceSnapSkipped{i}{j} = [];
             
             %raw length, length of skipped trace, and remaining length
             figData.axonTraceSnapLength{i}{j} = [];
