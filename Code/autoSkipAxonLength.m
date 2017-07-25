@@ -3,7 +3,7 @@ function hfig = autoSkipAxonLength(hfig)
     figData = guidata(hfig);
     [cs,ca,~,~,~] = currentOut(hfig);
 
-    %load skipped profile from int and roi based skipping
+    %load skipped profile from autoSkipAxonInt
     profile = figData.axonTraceSnapSkipped{cs}{ca};
     xi = profile(:,1);
     yi = profile(:,2);

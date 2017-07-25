@@ -1,8 +1,8 @@
 function clearBouton(hfig)
     [cs,ca,cb,~,~] = currentOut(hfig);
     figData = guidata(hfig);
-    figData.boutonCenter{cs}{ca}(cb,:) = nan(1,size(figData.boutonCenter,2));
-    figData.boutonStatus{cs}{ca}(cb,:) = nan(1,size(figData.boutonStatus,2));
+    figData.boutonCenter{cs}{ca}(cb,1:3) = nan(1,3);
+    figData.boutonStatus{cs}{ca}(cb,1:4) = nan(1,4);
     figData.boutonBoundary{cs}{ca}{cb} = {};
     figData.boutonMask{cs}{ca}{cb} = {};
     figData.boutonCross{cs}{ca}{cb} = {};

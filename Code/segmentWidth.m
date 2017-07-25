@@ -1,4 +1,4 @@
-function [width,backboneCenter,perpProfile, crossSegment] = segmentWidth(perpTrace,hfig)
+function [width,backboneCenter,perpProfile, crossSegment] = segmentWidth(perpTrace,hfig,slope,intercept)
     figData = guidata(hfig);
     [cs,ca,~,~,~] = currentOut(hfig);
 
@@ -15,10 +15,10 @@ function [width,backboneCenter,perpProfile, crossSegment] = segmentWidth(perpTra
     perpCenter = round(mean(perpTrace(:,1:2),1));
     [~,a] = min(sum(sqrt((backbone-perpCenter).^2),2));
     backboneCenter = [backbone(a,1:2),figData.currentZ{cs}];
-    medianint = figData.axonBrightnessProfileWeights{cs}{ca}(a,4); 
+    medianint = figData.axonBrightnessProfileBaseline{cs}{ca}(a,4); 
     
     %find index of largest blob over medianint threshold
-    [profile] = pickBlob(int,medianint);
+    [profile] = pickBlob(int,medianint,slope,intercept);
     indx = [find(~isnan(profile),1,'first');
             find(~isnan(profile),1,'last')];
     
@@ -28,8 +28,8 @@ function [width,backboneCenter,perpProfile, crossSegment] = segmentWidth(perpTra
     width = sqrt(sum(diff(crossSegment).^2));
 end
 
-function [profile] = pickBlob(int,medianint)
-    int(int < .5*medianint) = nan; %exclude values under Thresh * MeanBackgroundInt
+function [profile] = pickBlob(int,medianint,slope,intercept)
+    int(int < (slope*medianint + intercept)) = nan; %exclude values under Thresh * MeanBackgroundInt
     [imlabel,totalLabels] = bwlabel(~isnan(int));
     sizeBlob = zeros(1,totalLabels);
     for j = 1:totalLabels

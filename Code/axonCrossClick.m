@@ -31,7 +31,7 @@ function axonCrossClick(hfig,~)
                 lacseg = [];
 
                 for i = 1:floor(size(cacs,1)/2)
-                    [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*i-1:2*i,:),hfig);
+                    [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*i-1:2*i,:),hfig,.5,0);
                     law = [law;lawi]; %#ok<*AGROW>
                     lac = [lac;laci];
                     lacp{end+1} = lacpi;

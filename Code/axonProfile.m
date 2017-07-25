@@ -65,11 +65,11 @@ function [hfig] = axonProfile(hfig)
     guidata(hfig,figData);
     hfig = autoSkipAxonInt(hfig);
     
-    %use manual clicked points to skip regions within ROI
-    hfig = roiSnapAndSkip(hfig);
-    
     %use length of remaining regions to exclude axon segments too short
     hfig = autoSkipAxonLength(hfig);
+    
+    %use manual clicked points to skip regions within ROI
+    hfig = roiSnapAndSkip(hfig);
     figData = guidata(hfig);
     
     %calculate raw trace length

@@ -8,7 +8,7 @@ function hfig = roiSnapAndSkip(hfig)
     lastSegment = find(mod(1:size(csa,1),2)==0,1,'last');
     segments = csa(1:lastSegment,:);
 
-    %load skipped profile from autoSkipAxonInt
+    %load skipped profile from auto skipping based on int and length
     profile = figData.axonTraceSnapSkipped{cs}{ca};
     
     %skips all points in roi pairs
