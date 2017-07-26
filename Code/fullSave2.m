@@ -8,13 +8,13 @@ function fullSave2(hfig)
     stackAxonSummary(hfig);
     perAxonSummary(hfig);
     perBoutonSummary(hfig);
-%     outData = unshuffleOutput(hfig); %#ok<NASGU>
+    outData = unshuffleOutput(hfig); %#ok<NASGU>
     
     cd(resultsFolder)  
-%     filename = strrep(figData.mouseFileName,'.mat','');
-%     t = datetime('now','TimeZone','local');
-%     ts = datestr(t,'yymmdd_hhMMss',2000);
-%     save(['boutonfinalsave_' filename '_' ts '.mat'],'figData','outData','-v7.3');
+    filename = strrep(figData.mouseFileName,'.mat','');
+    t = datetime('now','TimeZone','local');
+    ts = datestr(t,'yymmdd_hhMMss',2000);
+    save(['boutonfinalsave_' filename '_' ts '.mat'],'figData','outData','-v7.3');
     cd(sourceFolder)
     guidata(hfig, figData)
 end
@@ -96,6 +96,58 @@ function completionCheck(hfig)
     guidata(hfig,figData)
 end
 
+function boutonSummaryCalc(hfig)
+    figData = guidata(hfig);
+    
+    for j = 1:figData.maxAxon
+        for k = 1:figData.maxBouton(j)
+            if all(figData.boutonCount(j,k,:))
+                for i = 1:figData.numStacks
+                    
+                    if find(figData.boutonStatus{i}{j}(k,:)) == 3
+                        %wipe all data for excluded boutons
+                        excludeBouton(hfig,i,j,k)
+                    else
+                        %bouton cross summary calculations
+                        cbc = figData.boutonCenter{i}{j};
+                        cbcs = figData.boutonCross{i}{j}{k};
+
+                        [cbw,cbc(k,:),cbcp,cbcseg] = segmentWidth(cbcs(1:2,:),hfig,.75,0);
+                        figData.boutonWidth{i}{j}{k} = cbw;
+                        figData.boutonCrossProfile{i}{j}{k} = cbcp;
+                        figData.boutonCrossSegment{i}{j}{k} = cbcseg;
+                        
+                        figData.boutonCenter{i}{j} = cbc;
+
+                        %local axon cross summary calculations
+                        cacs = figData.axonCross{i}{j}{k};
+
+                        law = [];
+                        lac = [];
+                        lacp = {};
+                        lacseg = [];
+
+                        for m = 1:floor(size(cacs,1)/2)
+                            [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*m-1:2*m,:),hfig,.75,0);
+                            law = [law;lawi]; %#ok<*AGROW>
+                            lac = [lac;laci];
+                            lacp{end+1} = lacpi;
+                            lacseg = [lacseg;lacsegi];
+                        end
+
+                        figData.localAxonWidth{i}{j}{k} = law;
+                        figData.localAxonCenter{i}{j}{k} = lac;
+                        figData.localAxonCrossProfile{i}{j}{k} = lacp;
+                        figData.localAxonCrossSegment{i}{j}{k} = lacseg;
+                    end
+                end
+            end
+        end
+    end
+    
+    guidata(hfig,figData);
+end
+
 function stackAxonSummary(hfig)
     figData = guidata(hfig);
     for i = 1:figData.numStacks
@@ -113,8 +165,8 @@ function stackAxonSummary(hfig)
                     %plot unskipped regions
                     cats = catss{j};
                     cats(isnan(cats(:,4)),:) = nan;
-                    line(cats{j}(:,1), cats{j}(:,2),'Color','c','Linestyle','-','linewidth',1);
-                    text(mean(cats{j}(:,1)),mean(cats{j}(:,2)) + 15, num2str(j),'Color','c');
+                    line(cats(:,1), cats(:,2),'Color','c','Linestyle','-','linewidth',1);
+                    text(mean(cats(:,1)),mean(cats(:,2)) + 15, num2str(j),'Color','c');
                     %plot skipped regions
                     csat = catss{j};
                     csat(~isnan(csat(:,4)),:) = nan;
@@ -146,8 +198,8 @@ function perAxonSummary(hfig)
                     %plot unskipped regions
                     cats = catss{j};
                     cats(isnan(cats(:,4)),:) = nan;
-                    line(cats{j}(:,1), cats{j}(:,2),'Color','c','Linestyle','-','linewidth',1);
-                    text(mean(cats{j}(:,1)),mean(cats{j}(:,2)) + 15, num2str(j),'Color','c');
+                    line(cats(:,1), cats(:,2),'Color','c','Linestyle','-','linewidth',1);
+                    text(mean(cats(:,1)),mean(cats(:,2)) + 15, num2str(j),'Color','c');
                     
                     %plot skipped regions
                     csat = catss{j};
@@ -345,7 +397,7 @@ function outData = unshuffleOutput(hfig)
         for m = 1:figData.numStacks
             i = figData.stackKey(m);
 
-            outData.axonLengths(j,i) = figData.axonIncludedTraceLength{cs}{ca};
+            outData.axonLengths(j,i) = figData.axonIncludedTraceLength{i}{j};
             
             outData.boutonPresence{j}(1:size(figData.boutonStatus{m}{j},1),i) = any(figData.boutonStatus{m}{j}(:,1:2),2);
             outData.exclude{j}(:,i) = figData.boutonStatus{m}{j}(:,3);
@@ -373,54 +425,6 @@ function outData = unshuffleOutput(hfig)
 
     end
     
-    guidata(hfig,figData);
-end
-
-function boutonSummaryCalc(hfig)
-    figData = guidata(hfig);
-    
-    for j = 1:figData.maxAxon
-        for k = 1:figData.maxBouton(j)
-            if all(figData.boutonCount(j,k,:))
-                for i = 1:figData.numStacks
-                    
-                    %bouton cross summary calculations
-                    cbc = figData.boutonCenter{i}{j};
-                    cbcs = figData.boutonCross{i}{j}{k};
-
-                    [cbw,cbc(cb,:),cbcp,cbcseg] = segmentWidth(cbcs(1:2,:),hfig,.75,0);
-                    figData.boutonWidth{i}{j}{k} = cbw;
-                    figData.boutonCrossProfile{i}{j}{k} = cbcp;
-                    figData.boutonCrossSegment{i}{j}{k} = cbcseg;
-                    
-                    
-                    %local axon cross summary calculations
-                    cacs = figData.axonCross{i}{j}{k};
-                    
-                    law = [];
-                    lac = [];
-                    lacp = {};
-                    lacseg = [];
-                    
-                    for m = 1:floor(size(cacs,1)/2)
-                        [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*m-1:2*m,:),hfig,.5,0);
-                        law = [law;lawi]; %#ok<*AGROW>
-                        lac = [lac;laci];
-                        lacp{end+1} = lacpi;
-                        lacseg = [lacseg;lacsegi];
-                    end
-                    
-                    figData.localAxonWidth{cs}{ca}{cb} = law;
-                    figData.localAxonCenter{cs}{ca}{cb} = lac;
-                    figData.localAxonCrossProfile{cs}{ca}{cb} = lacp;
-                    figData.localAxonCrossSegment{cs}{ca}{cb} = lacseg;
-                    
-                end
-            end
-        end
-    end
-    
-    figData.boutonCenter{i}{j} = cbc;
     guidata(hfig,figData);
 end
 

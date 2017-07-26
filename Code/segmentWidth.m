@@ -7,6 +7,7 @@ function [width,backboneCenter,perpProfile, crossSegment] = segmentWidth(perpTra
     perpCenter = round(mean(perpTrace(:,1:2),1));
     
     %interp line across bouton
+    perpTrace
     [xi,yi,int] = improfile(figData.stackDataShuffled{cs}(:,:,perpTrace(1,3)),perpTrace(:,1),perpTrace(:,2), lengthPerpTrace);
     perpProfile = int;
     
