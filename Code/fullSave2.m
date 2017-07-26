@@ -106,22 +106,21 @@ function stackAxonSummary(hfig)
             image(mean(figData.stackDataShuffled{i},3))
             hold on
             
-            cats = figData.axonTraceSnap{i};   %all axon traces for the current stack
-            for j = 1:size(cats,2)    %for each axon trace
-                if ~isempty(cats{j})
+            catss = figData.axonTraceSnapSkipped{i};
+            for j = 1:size(catss,2)
+                if ~isempty(catss{j})
+                    %plot unskipped regions
+                    cats = catss{j};
+                    cats(isnan(cats(:,4)),:) = nan;
                     line(cats{j}(:,1), cats{j}(:,2),'Color','c','Linestyle','-','linewidth',1);
                     text(mean(cats{j}(:,1)),mean(cats{j}(:,2)) + 15, num2str(j),'Color','c');
-                end
-            end
-            
-            csats = figData.axonTraceSnapSkipped{i};
-            for j = 1:size(csats,2)
-                if ~isempty(csats{j})
-                    csat = csats{j};
+                    %plot skipped regions
+                    csat = catss{j};
                     csat(~isnan(csat(:,4)),:) = nan;
                     line(csat(:,1),csat(:,2),'Color','r','LineStyle','-','linewidth',1);
                 end
             end
+            
             formatImage
             print(axonSummary,'-dpng',[filename 'axons'],'-noui')
             close(axonSummary)
@@ -137,17 +136,24 @@ function perAxonSummary(hfig)
             filename = strrep(figData.stackfileNameShuffled{i},'.mat','');
             %SAVE A SUMMARY FIGURE FOR EACH AXON, WITH BOUTON CENTERS
             %LABELED
-            cats = figData.axonTraceSnap{i};
-            csats = figData.axonTraceSnapSkipped{i};
+            catss = figData.axonTraceSnapSkipped{i};
             for j = 1:figData.maxAxon
-                if ~isempty(cats{j})   %for each axon
+                if ~isempty(catss{j})   %for each axon
                     perAxonSummary = figure;
                     image(mean(figData.stackDataShuffled{i},3))
-                    hold on                    
+                    hold on    
+                    %plot unskipped regions
+                    cats = catss{j};
+                    cats(isnan(cats(:,4)),:) = nan;
                     line(cats{j}(:,1), cats{j}(:,2),'Color','c','Linestyle','-','linewidth',1);
-                    text(round(mean(cats{j}(:,1))),round(mean(cats{j}(:,2)+15)), num2str(j),'Color','c');
-                    figData.rawAxonLengths{i}{j} = sum(sqrt(sum(diff(cats{j}).^2,2)));
-             
+                    text(mean(cats{j}(:,1)),mean(cats{j}(:,2)) + 15, num2str(j),'Color','c');
+                    
+                    %plot skipped regions
+                    csat = catss{j};
+                    csat(~isnan(csat(:,4)),:) = nan;
+                    line(csat(:,1),csat(:,2),'Color','r','LineStyle','-','linewidth',1);
+                    
+                    %plot boutons
                     cbc = figData.boutonCenter{i}{j};
                     if ~isempty(cbc)  
                         scatter(cbc(:,1),cbc(:,2),'r');
@@ -156,12 +162,6 @@ function perAxonSummary(hfig)
                         end
                     end
                     
-                    if ~isempty(csats{j})
-                        csat = csats{j};
-                        csat(~isnan(csat(:,4)),:) = nan;
-                        line(csat(:,1),csat(:,2),'Color','r','LineStyle','-','linewidth',1);
-                    end
-
                     formatImage
                     print(perAxonSummary,'-dpng',[filename 'A' num2str(j)],'-noui');
                     close(perAxonSummary)
@@ -189,10 +189,10 @@ function perBoutonSummary(hfig)
                     cbcseg = figData.boutonCrossSegment{i}{j}{k};
                     lacseg = figData.localAxonCrossSegment{i}{j}{k};
                     
-                    %Create filtered versions of raw image at boundary z plane
+                    %Create filtered versions of raw image at appropriate z plane
                     boutonImage = figData.stackDataShuffled{i}(:,:,cbc(k,3));
                     
-                    %create an roi centered around that bouton
+                    %create a 40x40 roi centered around that bouton
                     ymin = round(cbc(k,2))-20;
                     ymin(ymin<1)=1;
                     xmin = round(cbc(k,1))-20;
@@ -218,7 +218,6 @@ function perBoutonSummary(hfig)
                     image(imadjust(boutonImageROI,[0 figData.high_in{i}],[0 figData.high_out{i}]));
                     hold on
                     
-                    
                     if find(figData.boutonStatus{i}{j}(k,:)) ~= 3
                         backbone = figData.axonTraceSnapSkipped{i}{j};
                         backbone = backbone(backbone(:,2) > ymin & backbone(:,2) < ymax,:);
@@ -236,11 +235,13 @@ function perBoutonSummary(hfig)
                         for m = 1:floor(size(lacseg,1)/2)
                             line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color','g');
                         end
+                        title('clicked overlays')
+                        axis([0 size(boutonImageROI,1) 0 size(boutonImageROI,2)]);
+                    else
+                        text(.4,.5,'EXCLUDED')
+                        set(gca,'Visible','off')
                     end
                     
-                    
-                    axis([0 size(boutonImageROI,1) 0 size(boutonImageROI,2)]);
-                    title('clicked overlays')
                     formatImage
                     
                     %plot bouton and axon cross int with thresholds
@@ -257,7 +258,8 @@ function perBoutonSummary(hfig)
                         widthRatio = round(figData.boutonWidth{i}{j}{k}/mean(figData.localAxonWidth{i}{j}{k}),2);
                         title(['bouton:axon width = ' num2str(widthRatio)]);
                     else
-                        title('excluded')
+                        text(.4,.5,'EXCLUDED')
+                        set(gca,'Visible','off')
                     end
                     
                     %plot bouton and axon longitudinal int with thresholds
@@ -272,18 +274,24 @@ function perBoutonSummary(hfig)
                         peakToInt = max(backbone(:,4));
                         title(['bouton peak : med int = ' num2str(round(peakToInt,2))]);
                     else
-                        title('excluded')
+                        text(.4,.5,'EXCLUDED')
+                        set(gca,'Visible','off')
                     end
                     
                     %plot brightness boosted bouton, rotated
                     subplot(figData.numStacks,5,5*pos)
-                    boutonImageROIRot = rotateBouton(cbcr(1:2,:),cbc(k,1:2),hfig,i);
-                    image(imadjust(boutonImageROIRot,[0 figData.high_in{i}],[0 figData.high_out{i}]));
-                    hold on
-                    formatImage
-                    title('rotated');
-                   
+                    if find(figData.boutonStatus{i}{j}(k,:)) ~= 3
+                        boutonImageROIRot = rotateBouton(cbcr(1:2,:),cbc(k,1:2),hfig,i);
+                        image(imadjust(boutonImageROIRot,[0 figData.high_in{i}],[0 figData.high_out{i}]));
+                        hold on
+                        formatImage
+                        title('rotated');
+                    else
+                        text(.4,.5,'EXCLUDED')
+                        set(gca,'Visible','off')
+                    end
                 end
+                
                 set(boutonSummary, 'Position', get(0, 'Screensize'));
                 print(boutonSummary,'-dpng',[filename 'A' num2str(j) 'B' num2str(k)], '-noui');
                 close(boutonSummary)

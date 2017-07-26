@@ -1,4 +1,4 @@
-function testThresh(interceptMin, interceptMax, slopeMin, slopeMax,n,hfig)
+function testThresh2(interceptMin, interceptMax, slopeMin, slopeMax,n,hfig)
 
 figData = guidata(hfig);
 
@@ -11,7 +11,7 @@ for j = 1:figData.maxAxon
                 boutonSummary = figure;
                 cbc = figData.boutonCenter{i}{j};
                 cbcs = figData.boutonCross{i}{j}{k};
-                lacp = figData.localAxonCrossProfile{i}{j}{k};
+                lacp = figData.axonCross{i}{j}{k};
                 
                 boutonImage = figData.stackDataShuffled{i}(:,:,cbc(k,3));
                 
@@ -26,8 +26,8 @@ for j = 1:figData.maxAxon
                 
                 boutonImageROI = boutonImage(ymin:ymax,xmin:xmax);
                 
-                intercept = [interceptMin:(interceptMax-interceptMin)/(n-1):interceptMax];
-                slope = [slopeMin:(slopeMax-slopeMin)/(n-1):slopeMax];
+                intercept = interceptMin:(interceptMax-interceptMin)/(n-1):interceptMax;
+                slope = slopeMin:(slopeMax-slopeMin)/(n-1):slopeMax;
                 
                 
 
@@ -35,17 +35,17 @@ for j = 1:figData.maxAxon
                     subplot(n,n,m)
                     image(imadjust(boutonImageROI,[0 figData.high_in{i}],[0 figData.high_out{i}]));
                     hold on
-                    s = mod(m,n)+1;
+                    s = mod((m-1),n)+1;
                     in = floor((m-1)/n)+1;
                     [boutWidth,~,~,crossSegment] = segmentWidth(cbcs(1:2,:),hfig,slope(s),intercept(in));
                     line(crossSegment(:,1)-xmin+1,crossSegment(:,2)-ymin+1,'Color','g');
                     axonWidth = [];
                     for o = 1:floor(size(lacp,1)/2)
-                        [width,~,~,crossSegment] = segmentWidth(lacp(2*o-1:2*o,:,hfig,slope(s),intercept(in)));
+                        [width,~,~,crossSegment] = segmentWidth(lacp(2*o-1:2*o,:),hfig,slope(s),intercept(in));
                         line(crossSegment(:,1)-xmin+1,crossSegment(:,2)-ymin+1,'Color','g');
                         axonWidth = [axonWidth;width]; %#ok<AGROW>
                     end
-                    title(num2str(round(boutWidth/mean(axonWidth))));
+                    title(['slope ' num2str(slope(s)) 'int ' num2str(intercept(in)) ' ' num2str(round(boutWidth/mean(axonWidth)))]);
                     axis([0 size(boutonImageROI,1) 0 size(boutonImageROI,2)]);
                     formatImage
                     

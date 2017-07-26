@@ -25,7 +25,11 @@ function [width,backboneCenter,perpProfile, crossSegment] = segmentWidth(perpTra
     %measure width from blob indices
     crossSegment = [xi,yi];
     crossSegment = crossSegment(indx,:);
-    width = sqrt(sum(diff(crossSegment).^2));
+    if ~isempty(crossSegment)
+        width = sqrt(sum(diff(crossSegment).^2));
+    else
+        width = 0;
+    end
 end
 
 function [profile] = pickBlob(int,medianint,slope,intercept)
