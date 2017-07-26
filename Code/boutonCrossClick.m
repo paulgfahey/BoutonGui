@@ -27,11 +27,7 @@ function boutonCrossClick(hfig,~)
             cbcs(end+1,:) = [cx, cy, figData.currentZ{cs}];
              if size(cbcs,1) >= 2
                 cbs(cb,:) = figData.boutonStatusMatrix;
-                [cbw,cbc(cb,:),cbcp,cbcseg] = segmentWidth(cbcs(1:2,:),hfig,.5,0);
-                
-                figData.boutonWidth{cs}{ca}{cb} = cbw;
-                figData.boutonCrossProfile{cs}{ca}{cb} = cbcp;
-                figData.boutonCrossSegment{cs}{ca}{cb} = cbcseg;
+                [~,cbc(cb,:),~,~] = segmentWidth(cbcs(1:2,:),hfig,.5,0);
 
                 figData.currBouton{cs}{ca} = figData.currBouton{cs}{ca} +1;
                 

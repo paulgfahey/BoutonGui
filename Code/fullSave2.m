@@ -4,6 +4,7 @@ function fullSave2(hfig)
     resultsFolder = cd('resultsTiffs');
     
     completionCheck(hfig);
+    boutonSummaryCalc(hfig);
     stackAxonSummary(hfig);
     perAxonSummary(hfig);
     perBoutonSummary(hfig);
@@ -372,6 +373,54 @@ function outData = unshuffleOutput(hfig)
 
     end
     
+    guidata(hfig,figData);
+end
+
+function boutonSummaryCalc(hfig)
+    figData = guidata(hfig);
+    
+    for j = 1:figData.maxAxon
+        for k = 1:figData.maxBouton(j)
+            if all(figData.boutonCount(j,k,:))
+                for i = 1:figData.numStacks
+                    
+                    %bouton cross summary calculations
+                    cbc = figData.boutonCenter{i}{j};
+                    cbcs = figData.boutonCross{i}{j}{k};
+
+                    [cbw,cbc(cb,:),cbcp,cbcseg] = segmentWidth(cbcs(1:2,:),hfig,.75,0);
+                    figData.boutonWidth{i}{j}{k} = cbw;
+                    figData.boutonCrossProfile{i}{j}{k} = cbcp;
+                    figData.boutonCrossSegment{i}{j}{k} = cbcseg;
+                    
+                    
+                    %local axon cross summary calculations
+                    cacs = figData.axonCross{i}{j}{k};
+                    
+                    law = [];
+                    lac = [];
+                    lacp = {};
+                    lacseg = [];
+                    
+                    for m = 1:floor(size(cacs,1)/2)
+                        [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*m-1:2*m,:),hfig,.5,0);
+                        law = [law;lawi]; %#ok<*AGROW>
+                        lac = [lac;laci];
+                        lacp{end+1} = lacpi;
+                        lacseg = [lacseg;lacsegi];
+                    end
+                    
+                    figData.localAxonWidth{cs}{ca}{cb} = law;
+                    figData.localAxonCenter{cs}{ca}{cb} = lac;
+                    figData.localAxonCrossProfile{cs}{ca}{cb} = lacp;
+                    figData.localAxonCrossSegment{cs}{ca}{cb} = lacseg;
+                    
+                end
+            end
+        end
+    end
+    
+    figData.boutonCenter{i}{j} = cbc;
     guidata(hfig,figData);
 end
 

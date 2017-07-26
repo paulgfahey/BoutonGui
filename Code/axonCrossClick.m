@@ -25,32 +25,12 @@ function axonCrossClick(hfig,~)
         if ~any([cs cy]<0) && ~any([cx cy] > figData.dims{cs})
             cacs(end+1,:) = [cx, cy, figData.currentZ{cs}];
             if size(cacs,1)>=8
-                law = [];
-                lac = [];
-                lacp = {};
-                lacseg = [];
-
-                for i = 1:floor(size(cacs,1)/2)
-                    [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*i-1:2*i,:),hfig,.5,0);
-                    law = [law;lawi]; %#ok<*AGROW>
-                    lac = [lac;laci];
-                    lacp{end+1} = lacpi;
-                    lacseg = [lacseg;lacsegi];
-                end
-                
-                figData.localAxonWidth{cs}{ca}{cb} = law;
-                figData.localAxonCenter{cs}{ca}{cb} = lac;
-                figData.localAxonCrossProfile{cs}{ca}{cb} = lacp;
-                figData.localAxonCrossSegment{cs}{ca}{cb} = lacseg;
-                
                 set(hfig,'Name','Click to add boutons','NumberTitle','off')
                 set(hfig,'WindowButtonDownFcn',{@boutonCrossClick});
-                
             end
         end
     end
-    
-                
+       
     figData.axonCross{cs}{ca}{cb} = cacs;
     
     guidata(hfig,figData);
