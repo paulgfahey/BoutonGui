@@ -1,22 +1,20 @@
-function [width,backboneCenter,perpProfile, crossSegment] = segmentWidth(perpTrace,hfig,slope,intercept)
+function [width,backboneCenter,perpProfile, crossSegment] = segmentWidth(perpTrace,hfig,slope,intercept,i,j)
     figData = guidata(hfig);
-    [cs,ca,~,~,~] = currentOut(hfig);
-
+    
     %properties of the perpendicular trace clicked
     lengthPerpTrace = sqrt(sum(diff(perpTrace(:,1:2)).^2));
     perpCenter = round(mean(perpTrace(:,1:2),1));
     
     %interp line across bouton
-    perpTrace
-    [xi,yi,int] = improfile(figData.stackDataShuffled{cs}(:,:,perpTrace(1,3)),perpTrace(:,1),perpTrace(:,2), lengthPerpTrace);
+    [xi,yi,int] = improfile(figData.stackDataShuffled{i}(:,:,perpTrace(1,3)),perpTrace(:,1),perpTrace(:,2), lengthPerpTrace);
     perpProfile = int;
     
     %use local median backbone int for width cutoff
-    backbone = figData.axonBrightnessProfile{cs}{ca}(:,1:2);
+    backbone = figData.axonBrightnessProfile{i}{j}(:,1:2);
     perpCenter = round(mean(perpTrace(:,1:2),1));
     [~,a] = min(sum(sqrt((backbone-perpCenter).^2),2));
-    backboneCenter = [backbone(a,1:2),figData.currentZ{cs}];
-    medianint = figData.axonBrightnessProfileBaseline{cs}{ca}(a,4); 
+    medianint = figData.axonBrightnessProfileBaseline{i}{j}(a,4); 
+    backboneCenter = [backbone(a,1:2),perpTrace(1,3),medianint];
     
     %find index of largest blob over medianint threshold
     [profile] = pickBlob(int,medianint,slope,intercept);
@@ -34,7 +32,7 @@ function [width,backboneCenter,perpProfile, crossSegment] = segmentWidth(perpTra
 end
 
 function [profile] = pickBlob(int,medianint,slope,intercept)
-    int(int < (slope*medianint + intercept)) = nan; %exclude values under Thresh * MeanBackgroundInt
+    int(int < (slope*medianint + intercept)) = nan;
     [imlabel,totalLabels] = bwlabel(~isnan(int));
     sizeBlob = zeros(1,totalLabels);
     for j = 1:totalLabels

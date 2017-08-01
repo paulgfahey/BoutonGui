@@ -19,7 +19,7 @@ function boutonCrossClick(hfig,~)
         if ~isempty(klist)
             cbcs = [];
             cbs(klist,:) = nan(1,4);
-            cbc(klist,:) = nan(1,3);
+            cbc(klist,:) = nan(1,4);
             disp('Bouton Deleted')
         end
     else
@@ -27,7 +27,7 @@ function boutonCrossClick(hfig,~)
             cbcs(end+1,:) = [cx, cy, figData.currentZ{cs}];
              if size(cbcs,1) >= 2
                 cbs(cb,:) = figData.boutonStatusMatrix;
-                [~,cbc(cb,:),~,~] = segmentWidth(cbcs(1:2,:),hfig,.5,0);
+                [~,cbc(cb,:),~,~] = segmentWidth(cbcs(1:2,:),hfig,.5,0,cs,ca);
 
                 figData.currBouton{cs}{ca} = figData.currBouton{cs}{ca} +1;
                 
