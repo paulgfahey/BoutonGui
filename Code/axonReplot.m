@@ -67,14 +67,11 @@ function axonReplot(hfig)
                 if~isempty(abovePlaneTransition)
                     line(abovePlaneTransition(:,1),abovePlaneTransition(:,2),'Color',[.5,.5,.6],'LineStyle','-','linewidth',1);
                 end
+                
+                cat = cats{i};
+                cat(~isnan(cat(:,4)),:) = nan;
+                line(cat(:,1),cat(:,2),'Color','r','LineStyle','-','linewidth',1);
             end
         end
-    end
-    
-    cat = figData.axonTraceSnapSkipped{cs}{ca};
-     
-    if ~isempty(cat)
-        cat(~isnan(cat(:,4)),:) = nan;
-        line(cat(:,1),cat(:,2),'Color','r','LineStyle','-','linewidth',1);
     end
 end

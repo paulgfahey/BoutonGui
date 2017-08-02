@@ -6,7 +6,9 @@ function boutonReplot(hfig)
     statStrAbbr = {'A','B','E','X','T'};
     if ~isempty(cbc)
         for j = 1:size(cbc,1)
-            figData.boutonNums = text(cbc(j,1)+5,cbc(j,2),[num2str(j) statStrAbbr(figData.boutonStatus{cs}{ca}(j,:)>0)],'Color','red');
+            if ~any(isnan(cbc(j,:)))
+                figData.boutonNums = text(cbc(j,1)+5,cbc(j,2),[num2str(j) statStrAbbr(figData.boutonStatus{cs}{ca}(j,:)>0)],'Color','red');
+            end
         end
     end
 

@@ -323,7 +323,7 @@ function perBoutonSummary(hfig)
 
                         line(cbcseg(:,1)-xmin+1,cbcseg(:,2)+1-ymin,'Color','g');
                         for m = 1:floor(size(lacseg,1)/2)
-                            line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color','g');
+                            line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color','y');
                         end
                         title('clicked overlays')
                         axis([0 size(boutonImageROI,1) 0 size(boutonImageROI,2)]);
@@ -344,7 +344,7 @@ function perBoutonSummary(hfig)
                             plot(axonProfile{m}(:,1),axonProfile{m}(:,2));
                         end
                         plot([-10,10],[.75,.75],'--');
-                        axis([-10 10, 0 15])
+                        axis([-10 10, 0 20])
                         widthRatio = round(figData.boutonWidth{i}{j}{k}/mean(figData.localAxonWidth{i}{j}{k}),2);
                         title(['bouton:axon width = ' num2str(widthRatio)]);
                     else
@@ -354,10 +354,10 @@ function perBoutonSummary(hfig)
 
                     %plot bouton and axon longitudinal int with thresholds
                     subplot(figData.numStacks,5,5*pos-1)
+                    hold on
                     backbone = figData.axonTraceSnapSkipped{i}{j};
                     backbone = backbone(backbone(:,2) > ymin & backbone(:,2) < ymax,:);
                     backbone = backbone(backbone(:,1) > xmin & backbone(:,1) < xmax,:);
-                    hold on
                     if find(figData.boutonStatus{i}{j}(k,:)) ~= 3
                         xcenter = find(ismember(backbone(:,1:3),cbc(k,1:3),'rows'),1,'first');
                         if isempty(xcenter)
@@ -365,10 +365,10 @@ function perBoutonSummary(hfig)
                         end
                         xrange = (1:size(backbone,1))-xcenter;
                         plot(xrange',backbone(:,4))
-                        axis([xrange(1),xrange(end),.75,25]);
+                        axis([xrange(1),xrange(end),1,25]);
                         [maxtab, ~] = peakdet(backbone(:,4),max(backbone(:,4))/10);
                         [~,indx] = min(abs(maxtab(:,1)-xcenter));
-                        if abs(maxtab(indx,1)-xcenter) < 10
+                        if abs(maxtab(indx,1)-xcenter) < 5
                             maxtab = maxtab(indx,:);
                             scatter(maxtab(1)-xcenter,maxtab(2));
                             peakToInt = maxtab(2);
@@ -377,6 +377,12 @@ function perBoutonSummary(hfig)
                             peakToInt = backbone(xcenter,4);
                         end
                         title(['bouton peak : med int = ' num2str(round(peakToInt,2))]);
+                        
+                        
+%                         
+%                         figData.boutonPeakIntRaw{i}{j}{k} = 
+%                             figData.boutonPeakBaselineInt{i}{j}{k} = 
+%                             figData.boutonPeakIntWeighted{i}{j}{k} = peakToInt;
                     else
                         text(.4,.5,'EXCLUDED')
                         set(gca,'Visible','off')

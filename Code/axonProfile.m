@@ -4,7 +4,7 @@ function [hfig] = axonProfile(hfig)
     figData = guidata(hfig);
     [cs,ca,~,~,~] = currentOut(hfig);
     
-    n = 1; %rough distance between interpolated points
+    n = 2; %rough distance between interpolated points
     
     % extract snapped trace components and parameters
     trace = figData.axonTraceSnap{cs}{ca};

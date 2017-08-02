@@ -14,7 +14,7 @@ function [width,backboneCenter,perpProfile, crossSegment] = segmentWidth(perpTra
     perpCenter = round(mean(perpTrace(:,1:2),1));
     [~,a] = min(sum(sqrt((backbone-perpCenter).^2),2));
     medianint = figData.axonBrightnessProfileBaseline{i}{j}(a,4); 
-    backboneCenter = [backbone(a,1:2),perpTrace(1,3),medianint];
+    backboneCenter = [backbone(a,1:2),perpTrace(1,3),a];
     
     %find index of largest blob over medianint threshold
     [profile] = pickBlob(int,medianint,slope,intercept);
