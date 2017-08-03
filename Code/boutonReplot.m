@@ -15,7 +15,7 @@ function boutonReplot(hfig)
     cbcr = figData.boutonCross{cs}{ca}{cb};
     if ~isempty(cbcr)
         for j = 2:2:size(cbcr,1)
-            line(cbcr(j-1:j,1), cbcr(j-1:j,2),'Color','y','LineStyle','-','linewidth',1)
+            line(cbcr(j-1:j,1), cbcr(j-1:j,2),'Color','g','LineStyle','-','linewidth',1)
         end
     end
     

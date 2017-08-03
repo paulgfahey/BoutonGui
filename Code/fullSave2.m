@@ -272,23 +272,42 @@ function perBoutonSummary(hfig)
                 %Abbreviated version
                 cbc = figData.boutonCenter{i}{j};
                 cbcr = figData.boutonCross{i}{j}{k};
+                cbcp = nan(size(cbc));
 
-                if ~isnan(cbc(k,3))
+                if ~any(isnan(cbc(k,:)))
 
                     cbcseg = figData.boutonCrossSegment{i}{j}{k};
                     lacseg = figData.localAxonCrossSegment{i}{j}{k};
 
-                    %Create filtered versions of raw image at appropriate z plane
-                    boutonImage = figData.stackDataShuffled{i}(:,:,cbc(k,3));
-
+                    %shift bouton center to local peak
+                    backbone = figData.axonTraceSnapSkipped{i}{j};
+                    if find(figData.boutonStatus{i}{j}(k,:)) ~= 3
+                        cbcp(k,:) = cbc(k,:);
+                        [maxtab,~] = peakdet(backbone(:,4),backbone(cbc(k,4),4)/10);
+                        [~,indx] = min(abs(maxtab(:,1)-cbc(k,4)));
+                        if abs(maxtab(indx,1)-cbc(k,4)) < 5
+                            cbcp(k,:) = [backbone(maxtab(indx,1),1:3),maxtab(indx,1)];
+                        end
+                        axonIndx = cbcp(k,4);
+                        figData.boutonBrightness{i}{j}(k,1) = figData.axonBrightnessProfile{i}{j}(axonIndx,4);
+                        figData.boutonBrightness{i}{j}(k,2) = figData.axonBrightnessProfileBaseline{i}{j}(axonIndx,4);
+                        figData.boutonBrightness{i}{j}(k,3) = figData.axonTraceSnapSkipped{i}{j}(axonIndx,4);
+                        plotCenter = cbcp(k,:);
+                    else
+                        plotCenter = cbc(k,:);
+                    end
+                    
+                    boutonImage = figData.stackDataShuffled{i}(:,:,plotCenter(3));
+                    
+                    
                     %create a 40x40 roi centered around that bouton
-                    ymin = round(cbc(k,2))-30;
+                    ymin = round(plotCenter(2))-30;
                     ymin(ymin<1)=1;
-                    xmin = round(cbc(k,1))-30;
+                    xmin = round(plotCenter(1))-30;
                     xmin(xmin<1)=1;
-                    ymax = round(cbc(k,2))+30;
+                    ymax = round(plotCenter(2))+30;
                     ymax(ymax>figData.dims{i}(2)) = figData.dims{i}(2);
-                    xmax = round(cbc(k,1))+30;
+                    xmax = round(plotCenter(1))+30;
                     xmax(xmax>figData.dims{i}(1)) = figData.dims{i}(1);
 
                     %plot brightness boosted bouton, unrotated
@@ -320,11 +339,14 @@ function perBoutonSummary(hfig)
                         backbone2 = backbone;
                         backbone2(~isnan(backbone2(:,4)),:) = nan;
                         line(backbone(:,1)-xmin+1, backbone2(:,2)-ymin+1,'Color','r');
-
+                        
                         line(cbcseg(:,1)-xmin+1,cbcseg(:,2)+1-ymin,'Color','g');
                         for m = 1:floor(size(lacseg,1)/2)
                             line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color','y');
                         end
+                        
+                        scatter(cbcp(k,1)-xmin+1,cbcp(k,2)-ymin+1);
+                        
                         title('clicked overlays')
                         axis([0 size(boutonImageROI,1) 0 size(boutonImageROI,2)]);
                     else
@@ -355,43 +377,62 @@ function perBoutonSummary(hfig)
                     %plot bouton and axon longitudinal int with thresholds
                     subplot(figData.numStacks,5,5*pos-1)
                     hold on
-                    backbone = figData.axonTraceSnapSkipped{i}{j};
-                    backbone = backbone(backbone(:,2) > ymin & backbone(:,2) < ymax,:);
-                    backbone = backbone(backbone(:,1) > xmin & backbone(:,1) < xmax,:);
                     if find(figData.boutonStatus{i}{j}(k,:)) ~= 3
-                        xcenter = find(ismember(backbone(:,1:3),cbc(k,1:3),'rows'),1,'first');
-                        if isempty(xcenter)
-                            xcenter = round(size(backbone,1)/2);
-                        end
-                        xrange = (1:size(backbone,1))-xcenter;
-                        plot(xrange',backbone(:,4))
-                        axis([xrange(1),xrange(end),1,25]);
-                        [maxtab, ~] = peakdet(backbone(:,4),max(backbone(:,4))/10);
-                        [~,indx] = min(abs(maxtab(:,1)-xcenter));
-                        if abs(maxtab(indx,1)-xcenter) < 5
-                            maxtab = maxtab(indx,:);
-                            scatter(maxtab(1)-xcenter,maxtab(2));
-                            peakToInt = maxtab(2);
-                        else
-                            scatter(0,backbone(xcenter,4));
-                            peakToInt = backbone(xcenter,4);
-                        end
+                        backbone = figData.axonTraceSnapSkipped{i}{j};
+                        xrange = cbcp(k,4)-20:cbcp(k,4)+20;
+                        xrange(xrange<1) = [];
+                        xrange(xrange>size(backbone,1)) = [];
+                        plot(xrange,backbone(xrange',4));
+                        axis([cbcp(k,4)-20 cbcp(k,4)+20 0 25]);
+                        peakToInt = backbone(cbcp(k,4),4);
+                        scatter(cbcp(k,4),peakToInt);
                         title(['bouton peak : med int = ' num2str(round(peakToInt,2))]);
+                    else
+                        text(.4,.5,'EXCLUDED')
+                        set(gca,'Visible','off')
+                    end   
                         
-                        
+                    
+                    
+%                     
+%                     backbone = backbone(backbone(:,2) > ymin & backbone(:,2) < ymax,:);
+%                     backbone = backbone(backbone(:,1) > xmin & backbone(:,1) < xmax,:);
+%                     
+%                         
+%                         
+%                         
+%                         
+%                         
+%                         xcenter = find(ismember(backbone(:,1:3),cbc(k,1:3),'rows'),1,'first');
+%                         if isempty(xcenter)
+%                             xcenter = round(size(backbone,1)/2);
+%                         end
+%                         xrange = (1:size(backbone,1))-xcenter;
+%                         plot(xrange',backbone(:,4))
+%                         axis([xrange(1),xrange(end),1,25]);
+%                         [maxtab, ~] = peakdet(backbone(:,4),max(backbone(:,4))/10);
+%                         [~,indx] = min(abs(maxtab(:,1)-xcenter));
+%                         if abs(maxtab(indx,1)-xcenter) < 5
+%                             maxtab = maxtab(indx,:);
+%                             scatter(maxtab(1)-xcenter,maxtab(2));
+%                             peakToInt = maxtab(2);
+%                         else
+%                             scatter(0,backbone(xcenter,4));
+%                             peakToInt = backbone(xcenter,4);
+%                         end
+%                         title(['bouton peak : med int = ' num2str(round(peakToInt,2))]);
+%                         
+%                         
 %                         
 %                         figData.boutonPeakIntRaw{i}{j}{k} = 
 %                             figData.boutonPeakBaselineInt{i}{j}{k} = 
 %                             figData.boutonPeakIntWeighted{i}{j}{k} = peakToInt;
-                    else
-                        text(.4,.5,'EXCLUDED')
-                        set(gca,'Visible','off')
-                    end
+                    
 
                     %plot brightness boosted bouton, rotated
                     subplot(figData.numStacks,5,5*pos)
                     if find(figData.boutonStatus{i}{j}(k,:)) ~= 3
-                        boutonImageROIRot = rotateBouton(cbcr(1:2,:),cbc(k,1:2),hfig,i);
+                        boutonImageROIRot = rotateBouton(cbcr(1:2,:),cbcp(k,1:2),hfig,i);
                         image(imadjust(boutonImageROIRot,[0 figData.high_in{i}],[0 figData.high_out{i}]));
                         hold on
                         formatImage
@@ -403,13 +444,14 @@ function perBoutonSummary(hfig)
 
                 end
             end
-                
+            figData.boutonCenterPeakCorrected{i}{j} = cbcp;    
             set(boutonSummary, 'Position', get(0, 'Screensize'));
             print(boutonSummary,'-dpng',[filename 'A' num2str(j) 'B' num2str(k)], '-noui');
             close(boutonSummary)
 
         end
     end
+    
     
     guidata(hfig,figData)
 end
