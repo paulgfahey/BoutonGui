@@ -1,5 +1,4 @@
 function fullSave2(hfig)
-    figData = guidata(hfig);
     sourceFolder = cd('results');
     resultsFolder = cd('resultsTiffs');
     
@@ -162,6 +161,9 @@ function hfig = boutonSummaryCalc(hfig)
                     lac = [];
                     lacp = {};
                     lacseg = [];
+                    
+                    
+                    guidata(hfig,figData);
 
                     for m = 1:floor(size(cacs,1)/2)
                         [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*m-1:2*m,:),hfig,.75,0,i,j);
@@ -301,13 +303,13 @@ function perBoutonSummary(hfig)
                     
                     
                     %create a 40x40 roi centered around that bouton
-                    ymin = round(plotCenter(2))-30;
+                    ymin = round(plotCenter(2))-50;
                     ymin(ymin<1)=1;
-                    xmin = round(plotCenter(1))-30;
+                    xmin = round(plotCenter(1))-50;
                     xmin(xmin<1)=1;
-                    ymax = round(plotCenter(2))+30;
+                    ymax = round(plotCenter(2))+50;
                     ymax(ymax>figData.dims{i}(2)) = figData.dims{i}(2);
-                    xmax = round(plotCenter(1))+30;
+                    xmax = round(plotCenter(1))+50;
                     xmax(xmax>figData.dims{i}(1)) = figData.dims{i}(1);
 
                     %plot brightness boosted bouton, unrotated
@@ -334,15 +336,15 @@ function perBoutonSummary(hfig)
 
                         backbone1 = backbone;
                         backbone1(isnan(backbone1(:,4)),:) = nan;
-                        line(backbone1(:,1)-xmin+1,backbone1(:,2)-ymin+1,'Color','b');
+                        line(backbone1(:,1)-xmin+1,backbone1(:,2)-ymin+1,'Color','c');
 
                         backbone2 = backbone;
                         backbone2(~isnan(backbone2(:,4)),:) = nan;
                         line(backbone(:,1)-xmin+1, backbone2(:,2)-ymin+1,'Color','r');
                         
-                        line(cbcseg(:,1)-xmin+1,cbcseg(:,2)+1-ymin,'Color','g');
+                        line(cbcseg(:,1)-xmin+1,cbcseg(:,2)+1-ymin,'Color','g','LineWidth',2);
                         for m = 1:floor(size(lacseg,1)/2)
-                            line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color','y');
+                            line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color','b','LineWidth',2);
                         end
                         
                         scatter(cbcp(k,1)-xmin+1,cbcp(k,2)-ymin+1);
@@ -367,8 +369,25 @@ function perBoutonSummary(hfig)
                         end
                         plot([-10,10],[.75,.75],'--');
                         axis([-10 10, 0 20])
-                        widthRatio = round(figData.boutonWidth{i}{j}{k}/mean(figData.localAxonWidth{i}{j}{k}),2);
-                        title(['bouton:axon width = ' num2str(widthRatio)]);
+                        
+                        realWidths = figData.localAxonWidth{i}{j}{k};
+                        realWidths = realWidths(realWidths>1);
+                        
+                        widthDiff = figData.boutonWidth{i}{j}{k} - mean(realWidths);
+                        if widthDiff < 1
+                            printDiff = '<1';
+                        else
+                            printDiff = num2str(round(widthDiff,2));
+                        end
+                        
+                        if figData.boutonWidth{i}{j}{k} < 1
+                            printBout = '<1';
+                        else
+                            printBout = num2str(round(figData.boutonWidth{i}{j}{k},2));
+                        end
+                        
+                        
+                        title(['Bouton: ' printBout ' Axon: ' num2str(round(mean(realWidths),2)) ' Diff: ' printDiff]);
                     else
                         text(.4,.5,'EXCLUDED')
                         set(gca,'Visible','off')
@@ -382,7 +401,7 @@ function perBoutonSummary(hfig)
                         xrange = cbcp(k,4)-20:cbcp(k,4)+20;
                         xrange(xrange<1) = [];
                         xrange(xrange>size(backbone,1)) = [];
-                        plot(xrange,backbone(xrange',4));
+                        plot(xrange,backbone(xrange',4)); 
                         axis([cbcp(k,4)-20 cbcp(k,4)+20 0 25]);
                         peakToInt = backbone(cbcp(k,4),4);
                         scatter(cbcp(k,4),peakToInt);
@@ -392,43 +411,6 @@ function perBoutonSummary(hfig)
                         set(gca,'Visible','off')
                     end   
                         
-                    
-                    
-%                     
-%                     backbone = backbone(backbone(:,2) > ymin & backbone(:,2) < ymax,:);
-%                     backbone = backbone(backbone(:,1) > xmin & backbone(:,1) < xmax,:);
-%                     
-%                         
-%                         
-%                         
-%                         
-%                         
-%                         xcenter = find(ismember(backbone(:,1:3),cbc(k,1:3),'rows'),1,'first');
-%                         if isempty(xcenter)
-%                             xcenter = round(size(backbone,1)/2);
-%                         end
-%                         xrange = (1:size(backbone,1))-xcenter;
-%                         plot(xrange',backbone(:,4))
-%                         axis([xrange(1),xrange(end),1,25]);
-%                         [maxtab, ~] = peakdet(backbone(:,4),max(backbone(:,4))/10);
-%                         [~,indx] = min(abs(maxtab(:,1)-xcenter));
-%                         if abs(maxtab(indx,1)-xcenter) < 5
-%                             maxtab = maxtab(indx,:);
-%                             scatter(maxtab(1)-xcenter,maxtab(2));
-%                             peakToInt = maxtab(2);
-%                         else
-%                             scatter(0,backbone(xcenter,4));
-%                             peakToInt = backbone(xcenter,4);
-%                         end
-%                         title(['bouton peak : med int = ' num2str(round(peakToInt,2))]);
-%                         
-%                         
-%                         
-%                         figData.boutonPeakIntRaw{i}{j}{k} = 
-%                             figData.boutonPeakBaselineInt{i}{j}{k} = 
-%                             figData.boutonPeakIntWeighted{i}{j}{k} = peakToInt;
-                    
-
                     %plot brightness boosted bouton, rotated
                     subplot(figData.numStacks,5,5*pos)
                     if find(figData.boutonStatus{i}{j}(k,:)) ~= 3
@@ -483,51 +465,6 @@ function [boutonProfile, axonProfile] = boutonWidthPlotting(cs,ca,cb,hfig)
         axonProfile{m}(:,2) = axonProfileInt;
         axonProfile{m}(:,1) = axonProfileInd;
     end
-end
-
-function outData = unshuffleOutput(hfig)
-    figData = guidata(hfig);
-
-    outData.axonLengths = nan(figData.maxAxon,figData.numStacks);
-
-    for j = 1:figData.maxAxon
-        outData.boutonPresence{j} = nan(figData.maxBouton(j),figData.numStacks);
-        outData.exclude{j} = nan(figData.maxBouton(j),figData.numStacks);
-        outData.boutonInt{j} = nan(figData.maxBouton(j),3,figData.numStacks);
-        outData.boutonWidth{j} = nan(figData.maxBouton(j),3,figData.numStacks);
-
-        for m = 1:figData.numStacks
-            i = figData.stackKey(m);
-
-            outData.axonLengths(j,i) = figData.axonIncludedTraceLength{i}{j};
-            
-            outData.boutonPresence{j}(1:size(figData.boutonStatus{m}{j},1),i) = any(figData.boutonStatus{m}{j}(:,1:2),2);
-            outData.exclude{j}(1:size(figData.boutonStatus{m}{j},1),i) = figData.boutonStatus{m}{j}(:,3);
-            
-
-            for k = 1:figData.maxBouton(j)
-                if outData.exclude{j}(k,i) == 0 && all(figData.boutonCount(j,k,:))
-                outData.boutonInt{j}(k,1,i) = figData.boutonPeakInt{m}{j}{k};
-                outData.boutonInt{j}(k,2,i) = figData.axonBrightnessProfileBaseline{m}{j};
-                outData.boutonInt{j}(k,3,i) = outData.boutonInt{j}(k,1,i) / outData.boutonInt{j}(k,2,i);
-
-                outData.boutonWidth{j}(k,1,i) = figData.boutonWidth{m}{j}{k};
-                outData.boutonWidth{j}(k,2,i) = mean(figData.localAxonWidth{m}{j}{k});
-                outData.boutonWidth{j}(k,3,i) = outData.boutonWidth{j}(k,1,i) / outData.boutonWidth{j}(k,2,i);
-                end
-            end
-        end
-
-        outData.exclude{j} = any(outData.exclude{j},2);
-        outData.boutonPresence{j}(outData.exclude{j},:) = nan;
-
-        outData.boutonPersist{j} = outData.boutonPresence{j}(:,1:2) == 1 & outData.boutonPresence{j}(:,2:3) == 1;
-        outData.boutonForm{j} = outData.boutonPresence{j}(:,1:2) == 0 & outData.boutonPresence{j}(:,2:3) == 1;
-        outData.boutonElim{j} = outData.boutonPresence{j}(:,1:2) == 1 & outData.boutonPresence{j}(:,2:3) == 0;
-
-    end
-    
-    guidata(hfig,figData);
 end
 
 

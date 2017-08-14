@@ -262,6 +262,14 @@ function keyPress(hfig,events,~)
         set(hfig, 'WindowButtonMotionFcn',@backgroundCursorMotion);
     end
     
+    %INITIATE QUALITY CONTROL MODE 'V'
+    if strcmp(events.Key,'v')
+        guidata(hfig,figData);
+        hfig = qualityControl(hfig);
+        figData = guidata(hfig);
+    end
+        
+    
     % QUICK SAVE DATA BY PRESSING 'X'
     if strcmp(events.Key,'x')
         tic

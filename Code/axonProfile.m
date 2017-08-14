@@ -4,7 +4,7 @@ function [hfig] = axonProfile(hfig)
     figData = guidata(hfig);
     [cs,ca,~,~,~] = currentOut(hfig);
     
-    n = 2; %rough distance between interpolated points
+    n = 1.25; %oversample rate
     
     % extract snapped trace components and parameters
     trace = figData.axonTraceSnap{cs}{ca};
@@ -14,8 +14,9 @@ function [hfig] = axonProfile(hfig)
     traceLength = round(sum(sqrt(sum(diff(trace(:,1:2)).^2,2))));
     traceSize = size(trace,1);
     
-    %interpolate trace every ~n pixels
-    [xinterp,yinterp,~] = improfile(zeros(figData.dims{cs}),trace(:,1),trace(:,2),traceLength/n);
+    %interpolate trace to contain n*length # of points
+    [xinterp,yinterp,~] = improfile(zeros(figData.dims{cs}),trace(:,1),trace(:,2),traceLength*n);
+    
     
     %z interp assigns clickedZ to interpolated points between clicked points
     zinterp = nan(size(xinterp,1),1);
@@ -27,9 +28,14 @@ function [hfig] = axonProfile(hfig)
     end
     
     %round to nearest pixel
-    xi = round(xinterp);
-    yi = round(yinterp);
-    zi = zinterp;
+    xinterp = round(xinterp);
+    yinterp = round(yinterp);
+    
+    %remove duplicate pixels
+    [uniquePix,zinterpPix,~] = unique([xinterp,yinterp],'rows','stable');
+    xi = uniquePix(:,1);
+    yi = uniquePix(:,2);
+    zi = zinterp(zinterpPix);
     inti = nan(1,length(xi));
     
     %move through planes, extracting intensity for in-plane pixels
