@@ -344,7 +344,7 @@ function perBoutonSummary(hfig)
                         
                         line(cbcseg(:,1)-xmin+1,cbcseg(:,2)+1-ymin,'Color','g','LineWidth',2);
                         for m = 1:floor(size(lacseg,1)/2)
-                            line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color','b','LineWidth',2);
+                            line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color','c','LineWidth',2);
                         end
                         
                         scatter(cbcp(k,1)-xmin+1,cbcp(k,2)-ymin+1);

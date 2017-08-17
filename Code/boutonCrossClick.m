@@ -18,8 +18,8 @@ function boutonCrossClick(hfig,~)
         end
         if ~isempty(klist)
             cbcs = [];
-            cbs(klist,:) = nan(1,4);
-            cbc(klist,:) = nan(1,4);
+            cbs(klist,:) = nan;
+            cbc(klist,:) = nan;
             disp('Bouton Deleted')
         end
     else
@@ -29,7 +29,7 @@ function boutonCrossClick(hfig,~)
                 cbs(cb,:) = figData.boutonStatusMatrix;
                 [~,cbc(cb,:),~,~] = segmentWidth(cbcs(1:2,:),hfig,.5,0,cs,ca);
 
-                figData.currBouton{cs}{ca} = figData.currBouton{cs}{ca} +1;
+                figData.currBouton{cs}{ca} = figData.currBouton{cs}{ca} + 1;
                 
                 set(hfig,'Name','Click to add local axon diameter','NumberTitle','off')
                 set(hfig,'WindowButtonDownFcn',{@axonCrossClick});

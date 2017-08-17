@@ -56,8 +56,12 @@ function figData = newFigParam(hfig,~)
             figData.stackDataShuffledProcessed{i}(:,:,j) = imfilter(figData.stackDataShuffled{i}(:,:,j),gausswin(3)*gausswin(3)');
         end
         
-        %size and position variables
+        %current position
         figData.cs = 1;     %current stack
+        figData.currAxon{i} = 1;
+        figData.currentZ{i} = 1;
+        
+        %size and position variables
         figData.dims{i} = size(figData.stackDataShuffled{i}(:,:,1));
         figData.depth{i} = size(figData.stackDataShuffled{i},3);
         figData.centers{i} = figData.dims{i}/2;
@@ -73,12 +77,9 @@ function figData = newFigParam(hfig,~)
         figData.boutonStatusMatrix = [1 0 0 0];
         figData.boutonClasses = {'Alpha','Beta','Exclude','Absent'};
         figData.boutonString = figData.boutonClasses{logical(figData.boutonStatusMatrix)};
-        figData.boutonStatus{i} = cell(1);
+        figData.boutonStatus{i} = {};
         
-        %current positioning
-        figData.currentZ{i} = 1;
-        figData.currAxon{i} = 1;
-
+        
         %for establishing background intensity
         figData.backgroundInt{i} = {};
         figData.backgroundZ{i} = {};
@@ -107,21 +108,19 @@ function figData = newFigParam(hfig,~)
             figData.axonIncludedTraceLength{i}{j} = {};
             
             %axon intensity profile analysis
-            figData.axonBrightnessProfile{i}{j} = {};
-            figData.axonBrightnessProfileBaseline{i}{j} = {};
-            figData.axonBrightnessProfileWeighted{i}{j} = {};
-            figData.axonWeightedBrightnessPeaks{i}{j} = {};
+            figData.axonBrightnessProfile{i}{j} = {}; %raw intensity
+            figData.axonBrightnessProfileBaseline{i}{j} = {}; %running median at each point
+            figData.axonBrightnessProfileWeighted{i}{j} = {}; %intensity divided by local median
+            figData.axonWeightedBrightnessPeaks{i}{j} = {}; %logical containing areas over 1.75x median
             
             %bouton properties
             figData.currBouton{i}{j} = 1;
-            figData.boutonCenter{i}{j} = [];
-            figData.boutonStatus{i}{j} = [];
+            figData.boutonCenter{i}{j} = [];  %makes k x 4 matrix, where k is # of boutons, columns are x,y,z,axon_trace_index at time of trace or fullsave
+            figData.boutonStatus{i}{j} = [];  %makes k x 4 logical matrix, where k is # of boutons, columns are alpha/beta/exclude/absent categories
             
             %axon auto exclusion thresholds
-            figData.autoSkipAxonIntThresh{i}{j} = 5;
+            figData.autoSkipAxonIntThresh{i}{j} = 5; %can be adjusted per axon
             figData.autoSkipAxonLengthThresh{i}{j} = 100;
-            
-            figData.axonRegionCenter{i}{j} = [];
             
             for k = 1:100 % auto allows spots for 100 boutons per axon
                 
@@ -130,6 +129,7 @@ function figData = newFigParam(hfig,~)
                 figData.boutonWidth{i}{j}{k} = {};
                 figData.boutonCrossProfile{i}{j}{k} = {};
                 figData.boutonCrossSegment{i}{j}{k} = {};
+                figData.boutonPeakInt{i}{j}{k} = {};
                 
                 %axon perpendicular traces for calculating local axon width
                 figData.axonCross{i}{j}{k} = {};
@@ -138,7 +138,6 @@ function figData = newFigParam(hfig,~)
                 figData.localAxonCrossProfile{i}{j}{k} = {};
                 figData.localAxonCrossSegment{i}{j}{k} = {};
                 
-                figData.boutonPeakInt{i}{j}{k} = {};
             end
         end
     end
