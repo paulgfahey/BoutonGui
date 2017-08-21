@@ -63,11 +63,15 @@ function qcfig = shuffleIDs(hfig,qcfig)
                 prevPassed = [i*ones(size(prevPassed,1),1), j*ones(size(prevPassed,1),1), prevPassed];
 
                 if ~isempty(prevPassed)
-                    passed = ismember(boutonIDs(:,1:3),prevPassed,'rows');
-                    boutonIDs(find(passed),:) = [];
-
-                    passed = ismember(incompleteBout(:,1:3),prevPassed,'rows');
-                    incompleteBout(find(passed),:) = [];
+                    if ~isempty(boutonIDs)
+                        passed = ismember(boutonIDs(:,1:3),prevPassed,'rows');
+                        boutonIDs(find(passed),:) = [];
+                    end
+                    
+                    if ~isempty(incompleteBout)
+                        passed = ismember(incompleteBout(:,1:3),prevPassed,'rows');
+                        incompleteBout(find(passed),:) = [];
+                    end
                 end
             end
         end
@@ -249,7 +253,6 @@ function hfig = boutonSummaryCalc(hfig)
                     lacp = {};
                     lacseg = [];
                     
-                    disp([i j k]);
                     for m = 1:floor(size(cacs,1)/2)
                         [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*m-1:2*m,:),hfig,.75,0,i,j);
                         law = [law;lawi]; %#ok<*AGROW>

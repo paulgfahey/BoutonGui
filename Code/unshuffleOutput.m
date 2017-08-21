@@ -23,8 +23,8 @@ function outData = unshuffleOutput(hfig)
             
             for k = 1:figData.maxBouton(j)
                 if ~outData.exclude{j}(k,i) %&& all(figData.boutonCount(j,k,:))
-                    
-                    indx = figData.boutonCenter{i}{j}(k,4);
+                    disp([i,j,k]);
+                    indx = figData.boutonCenter{m}{j}(k,4);
                     
                     outData.boutonInt{j}(k,1,i) = figData.axonBrightnessProfile{m}{j}(indx,4);
                     outData.boutonInt{j}(k,2,i) = figData.axonBrightnessProfileBaseline{m}{j}(indx,4);

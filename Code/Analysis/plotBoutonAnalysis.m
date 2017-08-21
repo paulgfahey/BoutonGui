@@ -1,12 +1,13 @@
 function plotBoutonAnalysis(outData)
-
-
 allWidths = outData.boutonWidth;
 allInts = outData.boutonInt;
 presentBout = outData.boutonPresence;
-h = figure;
 
-% %raw width histogram
+
+%Distribution Figure 1
+
+h = figure;
+%raw width distribution
 subplot(1,4,1);
 title('raw width histogram'); hold on;
 allBoutonWidths = [];
@@ -15,8 +16,8 @@ for j = 1:size(allWidths,2)
 end
 allBoutonWidths = allBoutonWidths(~isnan(allBoutonWidths));
 scatterLinePlot(allBoutonWidths);
-% 
-% width difference histogram
+
+% width difference distribution
 subplot(1,4,2);
 title('width difference histogram'); hold on;
 allBoutonWidthDiff = [];
@@ -26,7 +27,7 @@ end
 allBoutonWidthDiff = allBoutonWidthDiff(~isnan(allBoutonWidthDiff));
 scatterLinePlot(allBoutonWidthDiff);
 
-% %raw brightness histogram
+% %raw brightness distribution
 subplot(1,4,3);
 title('raw brightness histogram'); hold on;
 boutonInt = [];
@@ -35,38 +36,74 @@ for j = 1:size(allInts,2)
 end
 boutonInt = boutonInt(~isnan(boutonInt));
 scatterLinePlot(boutonInt);
+% 
+% % %brightness quotient distribution
+% subplot(1,4,4);
+% title('brightness quotient histogram'); hold on;
+% boutonIntQuot = [];
+% for j = 1:size(allInts,2)
+%     boutonIntQuot = [boutonIntQuot;extractData(outData,allInts,3,j)];
+% end
+% boutonIntQuot = boutonIntQuot(~isnan(boutonIntQuot));
+% scatterLinePlot(boutonIntQuot);
 
-% %brightness quotient histogram
+% brightness difference distribution
 subplot(1,4,4);
-title('brightness quotient histogram'); hold on;
-boutonIntQuot = [];
+title('brightness difference histogram');
+hold on;
+boutonIntDiff = [];
 for j = 1:size(allInts,2)
-    boutonIntQuot = [boutonIntQuot;extractData(outData,allInts,3,j)];
+    boutonIntDiff = [boutonIntDiff; extractData(outData,allInts,2,j)];
 end
-boutonIntQuot = boutonIntQuot(~isnan(boutonIntQuot));
-scatterLinePlot(boutonIntQuot);
+boutonIntDiff = boutonIntDiff(~isnan(boutonIntDiff));
+boutonIntDiff = boutonInt - boutonIntDiff;
+scatterLinePlot(boutonIntDiff);
 
+
+
+
+
+%Change over time, figure 2
 figure;
 %Change in width over time
 subplot(1,2,1);
 title('width over time')
 boutonWidth = [];
 for j = 1:size(allWidths,2)
-    boutonWidth = [boutonWidth;permute(extractData(outData,allWidths,1,j),[1,3,2])];
+    boutonWidth = [boutonWidth;permute(extractData(outData,allWidths,3,j),[1,3,2])];
 end
 boutonWidth(isnan(boutonWidth(:,2)),:) = [];
 timeLinePlot(boutonWidth);
+
+% %change in brightness over time
+% subplot(1,2,2);
+% title('brightness over time')
+% boutonInt = [];
+% for j = 1:size(allInts,2)
+%     boutonInt = [boutonInt; permute(extractData(outData,allInts,3,j),[1,3,2])];
+% end
+% boutonInt(isnan(boutonInt(:,2)),:) = [];
+% timeLinePlot(boutonInt);
+
 
 %change in brightness over time
 subplot(1,2,2);
 title('brightness over time')
 boutonInt = [];
+axonInt = [];
 for j = 1:size(allInts,2)
     boutonInt = [boutonInt; permute(extractData(outData,allInts,1,j),[1,3,2])];
+    axonInt = [axonInt; permute(extractData(outData,allInts,2,j),[1,3,2])];
 end
-boutonInt(isnan(boutonInt(:,2)),:) = [];
-timeLinePlot(boutonInt);
+boutonIntDiff = boutonInt - axonInt;
+boutonIntDiff(isnan(boutonIntDiff(:,2)),:) = [];
+timeLinePlot(boutonIntDiff);
 
+
+
+
+
+%2D Scatter Plot
 figure;
 %width and brightness clusters
 title('width/brightness scatter')
@@ -88,28 +125,33 @@ boutonInt(exclude) = [];
 boutonIntRaw(exclude) = [];
 boutonWidthRaw(exclude) = [];
 
-subplot(2,2,1);
-scatter(boutonWidth,boutonInt);
-axis square
-subplot(2,2,2);
-scatter(boutonWidthRaw,boutonInt);
-axis square
-subplot(2,2,3);
-scatter(boutonWidth,boutonIntRaw);
-axis square
-subplot(2,2,4);
-scatter(boutonWidthRaw,boutonIntRaw);
-axis square
+scatter(boutonWidth, boutonInt,150,'.k')
 
+%Time Dependent 2D change, figure 4
 %change in width and brightness over time
+% boutonWidth = [];
+% boutonInt = [];
+% for j = 1:size(allWidths,2)
+%     boutonWidth = [boutonWidth;permute(extractData(outData,allWidths,3,j),[1,3,2])];
+% end
+% for j = 1:size(allInts,2)
+%     boutonInt = [boutonInt;permute(extractData(outData,allInts,3,j),[1,3,2])];
+% end
+
 boutonWidth = [];
 boutonInt = [];
+axonInt = [];
 for j = 1:size(allWidths,2)
     boutonWidth = [boutonWidth;permute(extractData(outData,allWidths,3,j),[1,3,2])];
 end
 for j = 1:size(allInts,2)
-    boutonInt = [boutonInt;permute(extractData(outData,allInts,3,j),[1,3,2])];
+    boutonInt = [boutonInt; permute(extractData(outData,allInts,1,j),[1,3,2])];
+    axonInt = [axonInt; permute(extractData(outData,allInts,2,j),[1,3,2])];
 end
+boutonInt = boutonInt - axonInt;
+maxInt = max(max(boutonInt));
+maxWidth = max(max(boutonWidth));
+
 
 boutonWidth1 = boutonWidth(:,1:2);
 boutonWidth2 = boutonWidth(:,2:3);
@@ -133,6 +175,7 @@ line(boutonWidth1(i,:),boutonInt1(i,:),'Color','k')
 scatter(boutonWidth1(i,1),boutonInt1(i,1),20,'sk')
 scatter(boutonWidth1(i,2),boutonInt1(i,2),120,'.k')
 end
+axis([0,maxWidth,0,maxInt]);
 
 subplot(1,2,2)
 title('t2 to t3')
@@ -142,6 +185,7 @@ line(boutonWidth2(i,:),boutonInt2(i,:),'Color','k')
 scatter(boutonWidth2(i,1),boutonInt2(i,1),20,'sk')
 scatter(boutonWidth2(i,2),boutonInt2(i,2),120,'.k')
 end
+axis([0,maxWidth,0,maxInt]);
 
 end
 
