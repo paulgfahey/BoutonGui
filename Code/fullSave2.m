@@ -285,6 +285,7 @@ function perBoutonSummary(hfig)
                     backbone = figData.axonTraceSnapSkipped{i}{j};
                     if find(figData.boutonStatus{i}{j}(k,:)) ~= 3
                         cbcp(k,:) = cbc(k,:);
+                        disp([i,j,k]);
                         [maxtab,~] = peakdet(backbone(:,4),backbone(cbc(k,4),4)/10);
                         [~,indx] = min(abs(maxtab(:,1)-cbc(k,4)));
                         if abs(maxtab(indx,1)-cbc(k,4)) < 5

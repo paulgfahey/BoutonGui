@@ -1,4 +1,42 @@
-function plotBoutonAnalysis(outData)
+function plotBoutonAnalysis
+disp('Enter OutData files to include for analysis')
+datacheck = input('Enter Stack Number [or enter "done"]     ','s');
+
+outData.boutonWidth = {};
+outData.boutonInt = {};
+outData.boutonPresence = {};
+
+while ~strcmp(datacheck,'done')
+    [filename,path] = uigetfile;
+    importFile = uiimport(fullfile(path,filename));
+    try
+        loadedData = importFile.outData;
+    catch ME
+        if strcmp(ME.identifier,'MATLAB:nonExistentField')
+            disp(ME.message)
+            warning('Invalid File.  Selected file must be struct with field outData')
+        else
+            disp(ME.message)
+        end
+        rethrow(ME)
+    end
+    
+    if ~isempty(loadedData)
+        for i = 1:size(loadedData.boutonWidth,2)
+            outData.boutonWidth{end+1} = loadedData.boutonWidth{i};
+        end
+        for i = 1:size(loadedData.boutonInt,2)
+            outData.boutonInt{end+1} = loadedData.boutonInt{i};
+        end
+        for i = 1:size(loadedData.boutonPresence,2)
+            outData.boutonPresence{end+1} = loadedData.boutonPresence{i};
+        end
+    end
+    
+    loadedData = {};
+    datacheck = input('Enter Stack Number [or enter "done"]     ','s');
+end
+    
 allWidths = outData.boutonWidth;
 allInts = outData.boutonInt;
 presentBout = outData.boutonPresence;

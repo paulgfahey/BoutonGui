@@ -2,6 +2,7 @@ function hfig = qualityControl(hfig)
 qcfig = figure;
 set(qcfig,'Name','Quality Control','NumberTitle','off')
 set(qcfig,'KeyPressFcn',{@keyPress,hfig});
+hfig = qcCompletionCheck(hfig);
 hfig = boutonSummaryCalc(hfig);
 qcfig = shuffleIDs(hfig,qcfig);
 qcfigData = guidata(qcfig);
@@ -59,7 +60,7 @@ function qcfig = shuffleIDs(hfig,qcfig)
                     end
                     order = order+1;
                 end
-                prevPassed = figData.boutonsPassed{i}{j};
+                prevPassed = figData.boutonPassed{i}{j};
                 prevPassed = [i*ones(size(prevPassed,1),1), j*ones(size(prevPassed,1),1), prevPassed];
 
                 if ~isempty(prevPassed)
@@ -177,10 +178,10 @@ function hfig = commitAndSummary(hfig,qcfig)
             if ~isempty(figData.boutonCenter{i}{j})
                 idx = ismember(qcfigData.reviewBoutons(:,1:2),[i,j],'rows');
                 idx = find(idx .* ~qcfigData.failed);
-                passed = figData.boutonsPassed{i}{j};
+                passed = figData.boutonPassed{i}{j};
                 passed = [passed;qcfigData.reviewBoutons(idx,3)];
                 passed = sort(passed);
-                figData.boutonsPassed{i}{j} = passed;
+                figData.boutonPassed{i}{j} = passed;
             end
         end
     end
@@ -252,6 +253,7 @@ function hfig = boutonSummaryCalc(hfig)
                     lac = [];
                     lacp = {};
                     lacseg = [];
+                   
                     
                     for m = 1:floor(size(cacs,1)/2)
                         [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*m-1:2*m,:),hfig,.75,0,i,j);
