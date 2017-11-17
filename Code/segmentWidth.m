@@ -12,7 +12,8 @@ function [width,backboneCenter,perpProfile, crossSegment] = segmentWidth(perpTra
     %use local median backbone int for width cutoff
     backbone = figData.axonBrightnessProfile{i}{j}(:,1:2);
     perpCenter = round(mean(perpTrace(:,1:2),1));
-    [~,a] = min(sum(sqrt((backbone-perpCenter).^2),2));
+    perpCenterDiff = bsxfun(@minus,backbone,perpCenter);
+    [~,a] = min(sum(sqrt(perpCenterDiff.^2),2));
     medianint = figData.axonBrightnessProfileBaseline{i}{j}(a,4); 
     backboneCenter = [backbone(a,1:2),perpTrace(1,3),a];
     

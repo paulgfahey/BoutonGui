@@ -40,7 +40,7 @@ function axonReplot(hfig)
                 %plot segments transitioning into or out of current plane
                 inPlane = logical(cat(:,3) == figData.currentZ{cs});
                 inPlaneLeft = logical([inPlane(2:end); 0]);
-                inPlaneRight = logical([0; inPlane(1:end-1)]);
+                inPlaneRight = logical([0; inPlane(1:end-1)]);x
 
                 belowPlaneLeft = inPlaneLeft & not(inPlane) & (cat(:,3) < figData.currentZ{cs});
                 abovePlaneLeft = inPlaneLeft & not(inPlane) & (cat(:,3) > figData.currentZ{cs});
