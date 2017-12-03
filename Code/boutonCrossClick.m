@@ -31,8 +31,8 @@ function boutonCrossClick(hfig,~)
 
                 figData.currBouton{cs}{ca} = figData.currBouton{cs}{ca} + 1;
                 
-                set(hfig,'Name','Click to add local axon diameter','NumberTitle','off')
-                set(hfig,'WindowButtonDownFcn',{@axonCrossClick});
+%                 set(hfig,'Name','Click to add local axon diameter','NumberTitle','off')
+%                 set(hfig,'WindowButtonDownFcn',{@axonCrossClick});
             end
         end
     end

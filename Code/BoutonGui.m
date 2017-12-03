@@ -107,49 +107,49 @@ function keyPress(hfig,events,~)
     figData = guidata(hfig);
     [cs,ca,cb,~,~] = currentOut(hfig);
     
-    % ARROW KEYS TRANSLATE
-    moveBin=figData.range{cs}(1,1)*.1;             %size of center adjustment per arrow keypress
-    if strcmp(events.Key,'leftarrow') 
-        figData.centers{cs}(1,1) = figData.centers{cs}(1,1)-moveBin;
-    end
-    
-    if strcmp(events.Key,'rightarrow')
-        figData.centers{cs}(1,1) = figData.centers{cs}(1,1)+moveBin;
-    end
-    
-    if strcmp(events.Key,'uparrow')
-        figData.centers{cs}(1,2) = figData.centers{cs}(1,2)-moveBin;
-    end
-    
-    if strcmp(events.Key,'downarrow')
-        figData.centers{cs}(1,2) = figData.centers{cs}(1,2)+moveBin;
-    end    
-    
-    % +/- ZOOM
-    if strcmp(events.Key,'equal')                      %ZOOM IN
-        figData.range{cs} = figData.range{cs} + figData.zoomFactor{cs};
-    end
-    
-    if strcmp(events.Key,'hyphen')                     %ZOOM OUT
-        figData.range{cs} = figData.range{cs} - figData.zoomFactor{cs};
-    end
-    
-    %CHANGE BOUTON STATUS MATRIX Q/W/E/R
-     if any(strcmp(events.Key,{'q','w','e','r'}))
-        figData.boutonStatusMatrix = strcmp(events.Key,{'q','w','e','r'});
-        figData.boutonStatus{cs}{ca}(cb,:) = figData.boutonStatusMatrix;
-        figData.boutonString = figData.boutonClasses{find(figData.boutonStatusMatrix)}; %#ok<*FNDSB>
-     end
+%     % ARROW KEYS TRANSLATE
+%     moveBin=figData.range{cs}(1,1)*.1;             %size of center adjustment per arrow keypress
+%     if strcmp(events.Key,'leftarrow') 
+%         figData.centers{cs}(1,1) = figData.centers{cs}(1,1)-moveBin;
+%     end
+%     
+%     if strcmp(events.Key,'rightarrow')
+%         figData.centers{cs}(1,1) = figData.centers{cs}(1,1)+moveBin;
+%     end
+%     
+%     if strcmp(events.Key,'uparrow')
+%         figData.centers{cs}(1,2) = figData.centers{cs}(1,2)-moveBin;
+%     end
+%     
+%     if strcmp(events.Key,'downarrow')
+%         figData.centers{cs}(1,2) = figData.centers{cs}(1,2)+moveBin;
+%     end    
+%     
+%     % +/- ZOOM
+%     if strcmp(events.Key,'equal')                      %ZOOM IN
+%         figData.range{cs} = figData.range{cs} + figData.zoomFactor{cs};
+%     end
+%     
+%     if strcmp(events.Key,'hyphen')                     %ZOOM OUT
+%         figData.range{cs} = figData.range{cs} - figData.zoomFactor{cs};
+%     end
+%     
+%     %CHANGE BOUTON STATUS MATRIX Q/W/E/R
+%      if any(strcmp(events.Key,{'q','w','e','r'}))
+%         figData.boutonStatusMatrix = strcmp(events.Key,{'q','w','e','r'});
+%         figData.boutonStatus{cs}{ca}(cb,:) = figData.boutonStatusMatrix;
+%         figData.boutonString = figData.boutonClasses{find(figData.boutonStatusMatrix)}; %#ok<*FNDSB>
+%      end
      
-    %ADJUST ASSISTED BOUTON BOUNDARY THRESHOLD WITH l/;
-    if strcmp(events.Key,'l') && figData.thresh > 0.001
-        figData.thresh = figData.thresh * .9;
-    end
-    
-    if strcmp(events.Key,'semicolon') && (figData.thresh * 1.1) < 1
-        figData.thresh = figData.thresh * 1.1;
-    end
-    
+%     %ADJUST ASSISTED BOUTON BOUNDARY THRESHOLD WITH l/;
+%     if strcmp(events.Key,'l') && figData.thresh > 0.001
+%         figData.thresh = figData.thresh * .9;
+%     end
+%     
+%     if strcmp(events.Key,'semicolon') && (figData.thresh * 1.1) < 1
+%         figData.thresh = figData.thresh * 1.1;
+%     end
+%     
     %DECREASE/INCREASE MAX INPUT/OUTPUT BRIGHTNESS o/p 9/0, RESPECTIVELY
     if strcmp(events.Key,'9') && figData.high_out{cs}>0
         figData.high_out{cs}=figData.high_out{cs}*.9;
@@ -171,19 +171,19 @@ function keyPress(hfig,events,~)
         figData.high_in{cs}(figData.high_in{cs} > 1) = 1;
     end
     
-    %MOVE UP OR DOWN IN SHUFFSTACK m/,
-    if strcmp(events.Key,'m') && cs < figData.numStacks
-        figData.cs = cs+1;
-        guidata(hfig,figData);
-        [cs,ca,cb,~,~] = currentOut(hfig);
-    end
-    
-    if strcmp(events.Key,'comma') && cs > 1
-        figData.cs = cs-1;
-        guidata(hfig,figData);
-        [cs,ca,cb,~,~] = currentOut(hfig);
-    end
-    
+%     %MOVE UP OR DOWN IN SHUFFSTACK m/,
+%     if strcmp(events.Key,'m') && cs < figData.numStacks
+%         figData.cs = cs+1;
+%         guidata(hfig,figData);
+%         [cs,ca,cb,~,~] = currentOut(hfig);
+%     end
+%     
+%     if strcmp(events.Key,'comma') && cs > 1
+%         figData.cs = cs-1;
+%         guidata(hfig,figData);
+%         [cs,ca,cb,~,~] = currentOut(hfig);
+%     end
+%     
     %ADVANCE OR RETURN TO BOUTON ON CURRENT AXON BY PRESSING u/i
     if strcmp(events.Key,'u') && cb >1
         cb = cb -1;
@@ -220,7 +220,7 @@ function keyPress(hfig,events,~)
         fullReplot(hfig);
     end
     
-    %CLEAR OVERLAY BY PRESSING 'SPACE'
+    %TRANSPARENT OVERLAY BY PRESSING 'SPACE'
     if strcmp(events.Key,'space')
         figData.overlay = ~figData.overlay;
         guidata(hfig,figData)
@@ -241,14 +241,22 @@ function keyPress(hfig,events,~)
         set(hfig,'WindowButtonMotionFcn','');
     end
     
-    %ENTER AXON CROSS MODE 'D'
+%     %ENTER AXON CROSS MODE 'D'
+%     if strcmp(events.Key,'d')
+%         set(hfig,'Name','Click to add local axon diameter','NumberTitle','off')
+%         set(hfig,'WindowButtonDownFcn',{@axonCrossClick});
+%         set(hfig,'WindowButtonMotionFcn','');
+%     end
+%     
+
+    %ENTER AXON CROSS QUALITY CONTROL MODE 'D'
     if strcmp(events.Key,'d')
-        set(hfig,'Name','Click to add local axon diameter','NumberTitle','off')
-        set(hfig,'WindowButtonDownFcn',{@axonCrossClick});
-        set(hfig,'WindowButtonMotionFcn','');
+        guidata(hfig,figData);
+        hfig = axonQualityControl(hfig);
+        figData = guidata(hfig);
     end
     
-    %ENTER AXON/BOUTON CROSS MODE 'F'
+    %ENTER BOUTON CROSS MODE 'F'
     if strcmp(events.Key,'f')
         set(hfig,'Name','Click to add boutons','NumberTitle','off')
         set(hfig,'WindowButtonDownFcn',{@boutonCrossClick});
@@ -262,10 +270,10 @@ function keyPress(hfig,events,~)
         set(hfig, 'WindowButtonMotionFcn',@backgroundCursorMotion);
     end
     
-    %INITIATE QUALITY CONTROL MODE 'V'
+    %INITIATE BOUTON QUALITY CONTROL MODE 'V'
     if strcmp(events.Key,'v')
         guidata(hfig,figData);
-        hfig = qualityControl(hfig);
+        hfig = boutonQualityControl(hfig);
         figData = guidata(hfig);
     end
         
@@ -296,8 +304,8 @@ function keyPress(hfig,events,~)
         figData = guidata(hfig);
     end
     
-    %CLEAR BOUTON BY PRESSING 'F2'
-    if strcmp(events.Key,'f2')
+    %CLEAR BOUTON BY PRESSING 'F3'
+    if strcmp(events.Key,'f3')
         clearBouton(hfig);      
         figData = guidata(hfig);
     end

@@ -1,8 +1,8 @@
-function hfig = qualityControl(hfig)
+function hfig = boutonQualityControl(hfig)
 qcfig = figure;
 set(qcfig,'Name','Quality Control','NumberTitle','off')
 set(qcfig,'KeyPressFcn',{@keyPress,hfig});
-hfig = qcCompletionCheck(hfig);
+hfig = boutonQCCompletionCheck(hfig);
 hfig = boutonSummaryCalc(hfig);
 qcfig = shuffleIDs(hfig,qcfig);
 qcfigData = guidata(qcfig);
