@@ -12,7 +12,7 @@ function hfig = axonQualityControl(hfig)
     qcfigData.fittedCutPoints = figData.axonCrossFitCutPoints{cs}{ca};
     qcfigData.index = 1;
     nanlessCutPoints = qcfigData.fittedCutPoints(~isnan(qcfigData.fittedCutPoints(:,1)),:);
-    qcfigData.failed = ones(size(nanlessCutPoints,1),1);
+    qcfigData.failed = zeros(size(nanlessCutPoints,1),1);
     qcfigData.nanlessPoints = qcfigData.fittedCutPoints(~isnan(qcfigData.fittedCutPoints(:,1)),:);
     qcfigData.nanlessIdx = find(~isnan(qcfigData.fittedCutPoints(:,1)));
     
@@ -65,13 +65,13 @@ function replotQC(qcfig,hfig)
     points = qcfigData.nanlessPoints(idx,:);
     
     
-    ymin = round(min([points(2),points(4)]))-50;
+    ymin = round(mean([points(2),points(4)]))-50;
     ymin(ymin<1)=1;
-    xmin = round(min([points(1),points(3)]))-50;
+    xmin = round(mean([points(1),points(3)]))-50;
     xmin(xmin<1)=1;
-    ymax = round(max([points(2),points(4)]))+50;
+    ymax = round(mean([points(2),points(4)]))+50;
     ymax(ymax>figData.dims{cs}(2)) = figData.dims{cs}(2);
-    xmax = round(max([points(1),points(3)]))+50;
+    xmax = round(mean([points(1),points(3)]))+50;
     xmax(xmax>figData.dims{cs}(1)) = figData.dims{cs}(1);
         
     axonImage = figData.stackDataShuffled{cs}(:,:,points(5));
@@ -146,10 +146,21 @@ function hfig = commitAndSummary(hfig,qcfig)
     
     subplot(2,1,1);
     hold on;
-    plot(figData.axonBrightnessProfile{cs}{ca}(:,4));
+    profile = figData.axonBrightnessProfile{cs}{ca}(:,4);
+    plot(profile,'k');
+    
+    skippedTrace = figData.axonTraceSnapSkipped{cs}{ca}(:,4);
+    skippedProfile = nan(size(profile,1));
+    skippedProfile(isnan(skippedTrace)) = profile(isnan(skippedTrace));
+    plot(skippedProfile,'r');
+    
     plot(figData.axonBrightnessProfileBaseline{cs}{ca}(:,4));
+    
     subplot(2,1,2);
+    hold on;
+    plot(figData.axonCrossFitLengths{cs}{ca},'or');
     plot(figData.axonCrossFitFilteredProfile{cs}{ca});
+    
     
     guidata(hfig,figData);   
 end

@@ -7,9 +7,9 @@ hfig = boutonSummaryCalc(hfig);
 qcfig = shuffleIDs(hfig,qcfig);
 qcfigData = guidata(qcfig);
 replotQC(qcfig,hfig);
-
 guidata(qcfig,qcfigData);
 end
+
 
 function keyPress(qcfig,events,hfig)
 qcfigData = guidata(qcfig);
@@ -26,6 +26,14 @@ if strcmp(events.Key,'space')
     qcfigData.failed(qcfigData.index) = ~qcfigData.failed(qcfigData.index);
 end
 
+if strcmp(events.Key,'uparrow')
+    [hfig,qcfig] = changeWidth(hfig, qcfig, 1.1);
+end
+
+if strcmp(events.Key,'downarrow')
+    [hfig,qcfig] = changeWidth(hfig,qcfig,.9);
+end
+
 if strcmp(events.Key,'e')
     hfig = commitAndSummary(hfig,qcfig);
     qcfig = shuffleIDs(hfig,qcfig);
@@ -37,11 +45,51 @@ replotQC(qcfig,hfig)
 guidata(qcfig,qcfigData);
 end
 
+
+function hfig = boutonSummaryCalc(hfig)
+    figData = guidata(hfig);
+    
+    
+    for j = 1:figData.maxAxon
+        for k = 1:figData.maxBouton(j)
+            for i = 1:figData.numStacks
+                exclude = find(figData.boutonStatus{i}{j}(k,:)) == 3;
+                nanbouton = any(isnan(figData.boutonStatus{i}{j}(k,:)));
+                nocross = isempty(figData.boutonCross{i}{j}{k});
+                if any([exclude, nanbouton, nocross])
+                    %wipe all data for excluded boutons
+                    excludeBouton(hfig,i,j,k)
+                else
+                    %bouton cross summary calculations
+                    cbcs = figData.boutonCross{i}{j}{k};
+                    cbc = figData.boutonCenter{i}{j};
+                    if isempty(figData.boutonThresh{i}{j}{k})
+                        figData.boutonThresh{i}{j}{k} = .75;
+                    end
+                    
+                    [cbw,cbc(k,:),cbcp,cbcseg] = segmentWidth(cbcs(1:2,:),hfig,figData.boutonThresh{i}{j}{k},0,i,j);
+                    figData.boutonWidth{i}{j}{k} = cbw;
+                    figData.boutonCrossProfile{i}{j}{k} = cbcp;
+                    figData.boutonCrossSegment{i}{j}{k} = cbcseg;
+
+                    figData.boutonCenter{i}{j} = cbc;
+                end
+            end
+        end
+    end
+    
+    guidata(hfig,figData);
+end
+
+
+
 function qcfig = shuffleIDs(hfig,qcfig)
     figData = guidata(hfig);
     qcfigData = guidata(qcfig);
     boutonIDs = [];
     incompleteBout = [];
+    boutonIDsPassed = [];
+    incompletePassed = [];
     
     order = 1;
     
@@ -52,8 +100,7 @@ function qcfig = shuffleIDs(hfig,qcfig)
                 
                 for k = 1:size(cbc,1)
                     cbcseg = figData.boutonCrossSegment{i}{j}{k};
-                    lacseg = figData.localAxonCrossSegment{i}{j}{k};
-                    if ~any(isnan(cbc(k,:))) & ~isempty(cbcseg) & ~isempty(lacseg)
+                    if ~any(isnan(cbc(k,:))) & ~isempty(cbcseg)
                         boutonIDs(end+1,1:5) = [i j k 1 order];
                     else
                         incompleteBout(end+1,1:5) = [i j k 0 order];
@@ -66,11 +113,13 @@ function qcfig = shuffleIDs(hfig,qcfig)
                 if ~isempty(prevPassed)
                     if ~isempty(boutonIDs)
                         passed = ismember(boutonIDs(:,1:3),prevPassed,'rows');
+                        boutonIDsPassed = [boutonIDsPassed;boutonIDs(find(passed),:)];
                         boutonIDs(find(passed),:) = [];
                     end
                     
                     if ~isempty(incompleteBout)
                         passed = ismember(incompleteBout(:,1:3),prevPassed,'rows');
+                        incompletePassed = [incompletePassed;incompleteBout(find(passed),:)];
                         incompleteBout(find(passed),:) = [];
                     end
                 end
@@ -83,14 +132,46 @@ function qcfig = shuffleIDs(hfig,qcfig)
     
     boutonIDs = boutonIDs(randperm(size(boutonIDs,1)),:);
     incompleteBout = incompleteBout(randperm(size(incompleteBout,1)),:);
-    reviewBoutons = [boutonIDs;incompleteBout];
+    reviewBoutons = [boutonIDs;incompleteBout; boutonIDsPassed;incompletePassed];
     qcfigData.reviewBoutons = reviewBoutons;
     
-    qcfigData.failed = ones(size(reviewBoutons,1),1);
+    qcfigData.failed = [ones(size([boutonIDs;incompleteBout],1),1); zeros(size([boutonIDsPassed; incompletePassed],1),1)];
+    
     
     qcfigData.index = 1;
     
     guidata(qcfig,qcfigData);
+end
+
+function [hfig,qcfig] = changeWidth(hfig,qcfig,direction)
+    figData = guidata(hfig);
+    qcfigData = guidata(qcfig);
+    
+    
+    i = qcfigData.reviewBoutons(qcfigData.index,1);
+    j = qcfigData.reviewBoutons(qcfigData.index,2);
+    k = qcfigData.reviewBoutons(qcfigData.index,3);
+    
+    figData.boutonThresh{i}{j}{k} = figData.boutonThresh{i}{j}{k} * direction;
+    
+    exclude = find(figData.boutonStatus{i}{j}(k,:)) == 3;
+    nanbouton = any(isnan(figData.boutonStatus{i}{j}(k,:)));
+    nocross = isempty(figData.boutonCross{i}{j}{k});
+    if ~any([exclude, nanbouton, nocross])
+        %bouton cross summary calculations
+        cbcs = figData.boutonCross{i}{j}{k};
+        cbc = figData.boutonCenter{i}{j};
+
+        [cbw,cbc(k,:),cbcp,cbcseg] = segmentWidth(cbcs(1:2,:),hfig,figData.boutonThresh{i}{j}{k},0,i,j);
+        figData.boutonWidth{i}{j}{k} = cbw;
+        figData.boutonCrossProfile{i}{j}{k} = cbcp;
+        figData.boutonCrossSegment{i}{j}{k} = cbcseg;
+
+        figData.boutonCenter{i}{j} = cbc;
+    end
+    
+    guidata(hfig,figData)
+    guidata(qcfig,qcfigData)
 end
 
 function replotQC(qcfig,hfig)
@@ -139,12 +220,8 @@ function replotQC(qcfig,hfig)
             line(backbone(:,1)-xmin+1, backbone2(:,2)-ymin+1,'Color','r');
 
             cbcseg = figData.boutonCrossSegment{i}{j}{k};
-            lacseg = figData.localAxonCrossSegment{i}{j}{k};
-
             line(cbcseg(:,1)-xmin+1,cbcseg(:,2)+1-ymin,'Color',[1 .2 .2],'LineWidth',2);
-            for m = 1:floor(size(lacseg,1)/2)
-                line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color',[.2 1 .2],'LineWidth',2);
-            end
+
             axis([0 size(boutonImageROI,1) 0 size(boutonImageROI,2)]);
         end
         
@@ -168,6 +245,8 @@ function replotQC(qcfig,hfig)
 
     guidata(qcfig,qcfigData);
 end
+
+
 
 function hfig = commitAndSummary(hfig,qcfig)
     figData = guidata(hfig);
@@ -216,65 +295,4 @@ function hfig = commitAndSummary(hfig,qcfig)
     'FontName',FixedWidth,'Units','Normalized','Position',[0 0 1 1]);
 
     figure(qcfig)
-
-    
-    
 end
-
-
-function hfig = boutonSummaryCalc(hfig)
-    figData = guidata(hfig);
-    
-    for j = 1:figData.maxAxon
-        for k = 1:figData.maxBouton(j)
-            for i = 1:figData.numStacks
-                exclude = find(figData.boutonStatus{i}{j}(k,:)) == 3;
-                nanbouton = any(isnan(figData.boutonStatus{i}{j}(k,:)));
-                nocross = isempty(figData.boutonCross{i}{j}{k});
-                if any([exclude, nanbouton, nocross])
-                    %wipe all data for excluded boutons
-                    excludeBouton(hfig,i,j,k)
-                else
-                    %bouton cross summary calculations
-                    cbcs = figData.boutonCross{i}{j}{k};
-                    cbc = figData.boutonCenter{i}{j};
-                    
-                    [cbw,cbc(k,:),cbcp,cbcseg] = segmentWidth(cbcs(1:2,:),hfig,.75,0,i,j);
-                    figData.boutonWidth{i}{j}{k} = cbw;
-                    figData.boutonCrossProfile{i}{j}{k} = cbcp;
-                    figData.boutonCrossSegment{i}{j}{k} = cbcseg;
-
-                    figData.boutonCenter{i}{j} = cbc;
-
-                    %local axon cross summary calculations
-                    cacs = figData.axonCross{i}{j}{k};
-
-                    law = [];
-                    lac = [];
-                    lacp = {};
-                    lacseg = [];
-                   
-                    
-                    for m = 1:floor(size(cacs,1)/2)
-                        [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*m-1:2*m,:),hfig,.75,0,i,j);
-                        law = [law;lawi]; %#ok<*AGROW>
-                        lac = [lac;laci];
-                        lacp{end+1} = lacpi;
-                        lacseg = [lacseg;lacsegi];
-                    end
-
-                    figData.localAxonWidth{i}{j}{k} = law;
-                    figData.localAxonCenter{i}{j}{k} = lac;
-                    figData.localAxonCrossProfile{i}{j}{k} = lacp;
-                    figData.localAxonCrossSegment{i}{j}{k} = lacseg;
-                end
-            end
-        end
-    end
-    
-    guidata(hfig,figData);
-end
-
-
-
-

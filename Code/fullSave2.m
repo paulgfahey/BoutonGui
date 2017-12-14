@@ -155,28 +155,28 @@ function hfig = boutonSummaryCalc(hfig)
                     figData.boutonCenter{i}{j} = cbc;
 
                     %local axon cross summary calculations
-                    cacs = figData.axonCross{i}{j}{k};
-
-                    law = [];
-                    lac = [];
-                    lacp = {};
-                    lacseg = [];
-                    
-                    
-                    guidata(hfig,figData);
-
-                    for m = 1:floor(size(cacs,1)/2)
-                        [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*m-1:2*m,:),hfig,.75,0,i,j);
-                        law = [law;lawi]; %#ok<*AGROW>
-                        lac = [lac;laci];
-                        lacp{end+1} = lacpi;
-                        lacseg = [lacseg;lacsegi];
-                    end
-
-                    figData.localAxonWidth{i}{j}{k} = law;
-                    figData.localAxonCenter{i}{j}{k} = lac;
-                    figData.localAxonCrossProfile{i}{j}{k} = lacp;
-                    figData.localAxonCrossSegment{i}{j}{k} = lacseg;
+%                     cacs = figData.axonCross{i}{j}{k};
+% 
+%                     law = [];
+%                     lac = [];
+%                     lacp = {};
+%                     lacseg = [];
+%                     
+%                     
+%                     guidata(hfig,figData);
+% 
+%                     for m = 1:floor(size(cacs,1)/2)
+%                         [lawi,laci,lacpi,lacsegi] = segmentWidth(cacs(2*m-1:2*m,:),hfig,.75,0,i,j);
+%                         law = [law;lawi]; %#ok<*AGROW>
+%                         lac = [lac;laci];
+%                         lacp{end+1} = lacpi;
+%                         lacseg = [lacseg;lacsegi];
+%                     end
+% 
+%                     figData.localAxonWidth{i}{j}{k} = law;
+%                     figData.localAxonCenter{i}{j}{k} = lac;
+%                     figData.localAxonCrossProfile{i}{j}{k} = lacp;
+%                     figData.localAxonCrossSegment{i}{j}{k} = lacseg;
                 end
             end
         end
@@ -279,7 +279,7 @@ function perBoutonSummary(hfig)
                 if ~any(isnan(cbc(k,:)))
 
                     cbcseg = figData.boutonCrossSegment{i}{j}{k};
-                    lacseg = figData.localAxonCrossSegment{i}{j}{k};
+%                     lacseg = figData.localAxonCrossSegment{i}{j}{k};
 
                     %shift bouton center to local peak
                     backbone = figData.axonTraceSnapSkipped{i}{j};
@@ -344,9 +344,9 @@ function perBoutonSummary(hfig)
                         line(backbone(:,1)-xmin+1, backbone2(:,2)-ymin+1,'Color','r');
                         
                         line(cbcseg(:,1)-xmin+1,cbcseg(:,2)+1-ymin,'Color','g','LineWidth',2);
-                        for m = 1:floor(size(lacseg,1)/2)
-                            line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color','c','LineWidth',2);
-                        end
+%                         for m = 1:floor(size(lacseg,1)/2)
+%                             line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color','c','LineWidth',2);
+%                         end
                         
                         scatter(cbcp(k,1)-xmin+1,cbcp(k,2)-ymin+1);
                         
@@ -359,40 +359,40 @@ function perBoutonSummary(hfig)
 
                     formatImage
 
-                    %plot bouton and axon cross int with thresholds
-                    subplot(figData.numStacks,5,5*pos-2)
-                    hold on
-                    if find(figData.boutonStatus{i}{j}(k,:)) ~= 3
-                        [boutonProfile,axonProfile] = boutonWidthPlotting(i,j,k,hfig);
-                        plot(boutonProfile(:,1),boutonProfile(:,2));
-                        for m = 1:size(axonProfile,2)
-                            plot(axonProfile{m}(:,1),axonProfile{m}(:,2));
-                        end
-                        plot([-10,10],[.75,.75],'--');
-                        axis([-10 10, 0 20])
-                        
-                        realWidths = figData.localAxonWidth{i}{j}{k};
-                        realWidths = realWidths(realWidths>1);
-                        
-                        widthDiff = figData.boutonWidth{i}{j}{k} - mean(realWidths);
-                        if widthDiff < 1
-                            printDiff = '<1';
-                        else
-                            printDiff = num2str(round(widthDiff,2));
-                        end
-                        
-                        if figData.boutonWidth{i}{j}{k} < 1
-                            printBout = '<1';
-                        else
-                            printBout = num2str(round(figData.boutonWidth{i}{j}{k},2));
-                        end
-                        
-                        
-                        title(['Bouton: ' printBout ' Axon: ' num2str(round(mean(realWidths),2)) ' Diff: ' printDiff]);
-                    else
-                        text(.4,.5,'EXCLUDED')
-                        set(gca,'Visible','off')
-                    end
+%                     %plot bouton and axon cross int with thresholds
+%                     subplot(figData.numStacks,5,5*pos-2)
+%                     hold on
+%                     if find(figData.boutonStatus{i}{j}(k,:)) ~= 3
+%                         [boutonProfile,axonProfile] = boutonWidthPlotting(i,j,k,hfig);
+%                         plot(boutonProfile(:,1),boutonProfile(:,2));
+%                         for m = 1:size(axonProfile,2)
+%                             plot(axonProfile{m}(:,1),axonProfile{m}(:,2));
+%                         end
+%                         plot([-10,10],[.75,.75],'--');
+%                         axis([-10 10, 0 20])
+%                         
+%                         realWidths = figData.localAxonWidth{i}{j}{k};
+%                         realWidths = realWidths(realWidths>1);
+%                         
+%                         widthDiff = figData.boutonWidth{i}{j}{k} - mean(realWidths);
+%                         if widthDiff < 1
+%                             printDiff = '<1';
+%                         else
+%                             printDiff = num2str(round(widthDiff,2));
+%                         end
+%                         
+%                         if figData.boutonWidth{i}{j}{k} < 1
+%                             printBout = '<1';
+%                         else
+%                             printBout = num2str(round(figData.boutonWidth{i}{j}{k},2));
+%                         end
+%                         
+%                         
+%                         title(['Bouton: ' printBout ' Axon: ' num2str(round(mean(realWidths),2)) ' Diff: ' printDiff]);
+%                     else
+%                         text(.4,.5,'EXCLUDED')
+%                         set(gca,'Visible','off')
+%                     end
 
                     %plot bouton and axon longitudinal int with thresholds
                     subplot(figData.numStacks,5,5*pos-1)

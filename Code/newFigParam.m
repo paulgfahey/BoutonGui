@@ -118,6 +118,7 @@ function figData = newFigParam(hfig,~)
             figData.boutonCenter{i}{j} = [];  %makes k x 4 matrix, where k is # of boutons, columns are x,y,z,axon_trace_index at time of trace or fullsave
             figData.boutonStatus{i}{j} = [];  %makes k x 4 logical matrix, where k is # of boutons, columns are alpha/beta/exclude/absent categories
             figData.boutonPassed{i}{j} = [];
+            figData.boutonThresh{i}{j} = [];
             
             %axon auto exclusion thresholds
             figData.autoSkipAxonIntThresh{i}{j} = 5; %can be adjusted per axon

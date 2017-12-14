@@ -134,12 +134,12 @@ function keyPress(hfig,events,~)
 %         figData.range{cs} = figData.range{cs} - figData.zoomFactor{cs};
 %     end
 %     
-%     %CHANGE BOUTON STATUS MATRIX Q/W/E/R
-%      if any(strcmp(events.Key,{'q','w','e','r'}))
-%         figData.boutonStatusMatrix = strcmp(events.Key,{'q','w','e','r'});
-%         figData.boutonStatus{cs}{ca}(cb,:) = figData.boutonStatusMatrix;
-%         figData.boutonString = figData.boutonClasses{find(figData.boutonStatusMatrix)}; %#ok<*FNDSB>
-%      end
+    %CHANGE BOUTON STATUS MATRIX Q/W/E/R
+     if any(strcmp(events.Key,{'q','w','e','r'}))
+        figData.boutonStatusMatrix = strcmp(events.Key,{'q','w','e','r'});
+        figData.boutonStatus{cs}{ca}(cb,:) = figData.boutonStatusMatrix;
+        figData.boutonString = figData.boutonClasses{find(figData.boutonStatusMatrix)}; %#ok<*FNDSB>
+     end
      
 %     %ADJUST ASSISTED BOUTON BOUNDARY THRESHOLD WITH l/;
 %     if strcmp(events.Key,'l') && figData.thresh > 0.001

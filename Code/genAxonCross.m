@@ -10,16 +10,15 @@ function hfig = genAxonCross(hfig)
     [traceCenters, traceAng, centerIdx] = genCenters(axonTraceFull);
     
     %create pointTransform for range of cross angles to explore, relative to estimated perpendicular
-    degStep = 2.5;
+    degStep = 5;
     degRange = 45;
     degSet = 90-degRange:degStep:90+degRange;
-    interpN = 100;
-    pointTransform = pointTransformSet(degSet, interpN);
-    
+    interpN = 50;
     
     stringLen = 0;
     disp('Testing Center: ')
     for i = 1:length(traceCenters(:,1))
+        pointTransform = pointTransformSet(degSet, traceAng(i), interpN);
         [fittedAng(i,:), fittedPoints(i,:), fittedCutPoints(i,:)] = testCrosses(traceAng(i), traceCenters(i,:), pointTransform, cs, hfig,interpN, degSet);
 
         if mod(i,10) == 0
@@ -46,7 +45,7 @@ end
 
 
 function [traceCenters, traceAng, centerIdx] = genCenters(axonTraceFull)
-    n = 2;                 %downsample factor
+    n = 4;                 %downsample factor
     intThresh = 1.8;        %norm to filtered axon running median intensity, removes boutons
     
     %downsample axon trace by factor of n, then find x/y/int mid points and transfer z
@@ -70,11 +69,11 @@ function [traceCenters, traceAng, centerIdx] = genCenters(axonTraceFull)
     
 end
 
-function pointTransform = pointTransformSet(degSet, interpN)
+function pointTransform = pointTransformSet(degSet, traceAng, interpN)
     
     pointTransform = nan(length(degSet),4);
     for j = 1:length(degSet)
-        theta = degSet(j);
+        theta = degSet(j)+traceAng;
         tform = affine2d([cosd(theta) sind(theta) 0; -sind(theta) cosd(theta) 0; 0 0 1]);
         
         %rotate points around origin, then shift to traceCenters

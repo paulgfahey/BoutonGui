@@ -31,7 +31,8 @@ function outData = unshuffleOutput(hfig)
                     outData.boutonInt{j}(k,3,i) = figData.axonBrightnessProfileWeighted{m}{j}(indx,4);
 
                     outData.boutonWidth{j}(k,1,i) = figData.boutonWidth{m}{j}{k};
-                    outData.boutonWidth{j}(k,2,i) = nanmean(figData.localAxonWidth{m}{j}{k});
+%                     outData.boutonWidth{j}(k,2,i) = nanmean(figData.localAxonWidth{m}{j}{k});
+                    outData.boutonWidth{j}(k,2,i) = figData.axonCrossFitFilteredProfile{m}{j}(index);
                     outData.boutonWidth{j}(k,3,i) = outData.boutonWidth{j}(k,1,i) - outData.boutonWidth{j}(k,2,i);
                 else
                     outData.boutonInt{j}(k,:,i) = nan(1,3,1);

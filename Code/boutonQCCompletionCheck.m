@@ -3,12 +3,12 @@ function hfig = boutonQCCompletionCheck(hfig)
     figData.axonCount = zeros(figData.numStacks,25);
     figData.boutonCount = zeros(25,100);
     figData.boutonPartialCount = zeros(25,100,figData.numStacks);
+
    for i = 1:figData.numStacks
         for j = 1:25
             figData.axonCount(i,j) = ~isempty(figData.axonTrace{i}{j});  %creates i x j table of axon trace presence
             cbc = figData.boutonCenter{i}{j};
             cbs = figData.boutonStatus{i}{j};
-            cbcr = figData.boutonCross{i}{j};
             
             kmax = max([size(cbc,1),size(cbs,1)]);
             cbcdiff = diff([size(cbc,1);kmax]);
@@ -22,10 +22,10 @@ function hfig = boutonQCCompletionCheck(hfig)
                 cbs = [cbs;nan(cbsdiff,size(cbs,2))];
                 figData.boutonStatus{i}{j} = cbs;
             end
-            
+
             for k = 1:kmax
-                complete = ~any([k>size(cbc,1), any(isnan(cbc(k,:))), k>size(cbs,1), any(isnan(cbs(k,:))), isempty(cbcr{k})]);
-                incomplete = ~complete & any([~any(isnan(cbc(k,:))), ~k>size(cbs,1), ~any(isnan(cbs(k,:))), ~isempty(cbcr{k})]);
+                complete = ~any([k>size(cbc,1), any(isnan(cbc(k,:))), k>size(cbs,1), any(isnan(cbs(k,:)))]);
+                incomplete = ~complete & any([~any(isnan(cbc(k,:))), ~k>size(cbs,1), ~any(isnan(cbs(k,:)))]);
                 figData.boutonCount(j,k,i) = complete;  %creates j x k x i table of bouton analysis completion
                 figData.boutonPartialCount(j,k,i) = incomplete;
             end
