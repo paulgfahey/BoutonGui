@@ -133,12 +133,12 @@ function figData = newFigParam(hfig,~)
                 figData.boutonCrossSegment{i}{j}{k} = {};
                 figData.boutonPeakInt{i}{j}{k} = {};
                 
-                %axon perpendicular traces for calculating local axon width
-                figData.axonCross{i}{j}{k} = {};
-                figData.localAxonWidth{i}{j}{k} = {};
-                figData.localAxonCenter{i}{j}{k} = {};
-                figData.localAxonCrossProfile{i}{j}{k} = {};
-                figData.localAxonCrossSegment{i}{j}{k} = {};
+%                 %axon perpendicular traces for calculating local axon width
+%                 figData.axonCross{i}{j}{k} = {};
+%                 figData.localAxonWidth{i}{j}{k} = {};
+%                 figData.localAxonCenter{i}{j}{k} = {};
+%                 figData.localAxonCrossProfile{i}{j}{k} = {};
+%                 figData.localAxonCrossSegment{i}{j}{k} = {};
                 
             end
         end
