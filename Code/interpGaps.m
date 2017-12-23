@@ -8,7 +8,11 @@ function interpBackbone = interpGaps(hfig, profile)
         indlast = find((imlabel == j),1,'last');
         sizeGap = length(find(imlabel == j));
         if indfirst <= 1
-            indprev = profile(indlast+1);
+            if indlast+1 > size(profile,1)
+                indprev = profile(indlast);
+            else
+                indprev = profile(indlast+1);
+            end
         else
             indprev = profile(indfirst-1);
         end

@@ -27,11 +27,11 @@ if strcmp(events.Key,'space')
 end
 
 if strcmp(events.Key,'uparrow')
-    [hfig,qcfig] = changeWidth(hfig, qcfig, 1.1);
+    hfig = changeWidth(hfig, qcfig, 0.1);
 end
 
 if strcmp(events.Key,'downarrow')
-    [hfig,qcfig] = changeWidth(hfig,qcfig,.9);
+    hfig = changeWidth(hfig,qcfig,-0.1);
 end
 
 if strcmp(events.Key,'e')
@@ -39,6 +39,7 @@ if strcmp(events.Key,'e')
     qcfig = shuffleIDs(hfig,qcfig);
     qcfigData = guidata(qcfig);
 end
+
 
 guidata(qcfig,qcfigData)
 replotQC(qcfig,hfig)
@@ -143,7 +144,7 @@ function qcfig = shuffleIDs(hfig,qcfig)
     guidata(qcfig,qcfigData);
 end
 
-function [hfig,qcfig] = changeWidth(hfig,qcfig,direction)
+function hfig = changeWidth(hfig,qcfig,direction)
     figData = guidata(hfig);
     qcfigData = guidata(qcfig);
     
@@ -152,7 +153,7 @@ function [hfig,qcfig] = changeWidth(hfig,qcfig,direction)
     j = qcfigData.reviewBoutons(qcfigData.index,2);
     k = qcfigData.reviewBoutons(qcfigData.index,3);
     
-    figData.boutonThresh{i}{j}{k} = figData.boutonThresh{i}{j}{k} * direction;
+    figData.boutonThresh{i}{j}{k} = figData.boutonThresh{i}{j}{k} + direction;
     
     exclude = find(figData.boutonStatus{i}{j}(k,:)) == 3;
     nanbouton = any(isnan(figData.boutonStatus{i}{j}(k,:)));
@@ -171,7 +172,6 @@ function [hfig,qcfig] = changeWidth(hfig,qcfig,direction)
     end
     
     guidata(hfig,figData)
-    guidata(qcfig,qcfigData)
 end
 
 function replotQC(qcfig,hfig)

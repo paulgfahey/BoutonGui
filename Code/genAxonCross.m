@@ -10,20 +10,47 @@ function hfig = genAxonCross(hfig)
     [traceCenters, traceAng, centerIdx] = genCenters(axonTraceFull);
     
     %create pointTransform for range of cross angles to explore, relative to estimated perpendicular
-    degStep = 5;
-    degRange = 45;
+    degStep = 2.5;
+    degRange = 20;
     degSet = 90-degRange:degStep:90+degRange;
-    interpN = 50;
+    interpN = 25;
+    
+    %initially pass some fraction of randomly selected centers
+    startCenters = min([50,length(traceCenters(:,1))]);
+    indexOrder = randperm(length(traceCenters(:,1)));
+    
+    fittedAng = nan(size(centerIdx,1),1);
+    fittedPoints = nan(size(centerIdx,1),5);
+    fittedCutPoints = nan(size(centerIdx,1),5);
+    
+    minPoints = round(max([50,length(centerIdx)/5]));
+    minPoints = min(minPoints,250);
     
     stringLen = 0;
-    disp('Testing Center: ')
-    for i = 1:length(traceCenters(:,1))
+    fprintf('\n');
+%     disp('Testing Center: ')
+    for n = 1:startCenters
+        i = indexOrder(n);
         pointTransform = pointTransformSet(degSet, traceAng(i), interpN);
         [fittedAng(i,:), fittedPoints(i,:), fittedCutPoints(i,:)] = testCrosses(traceAng(i), traceCenters(i,:), pointTransform, cs, hfig,interpN, degSet);
 
-        if mod(i,10) == 0
+        if mod(n,10) == 0
             fprintf(repmat('\b', 1, stringLen+1));
-            stringLen = fprintf('%d / %d', i, length(traceCenters(:,1)));
+            stringLen = fprintf('%d tested out of %d, %d approved out of %d', n, length(traceCenters(:,1)), sum(~isnan(fittedPoints(:,1))), minPoints);
+            fprintf('\n');
+        end
+    end
+    
+    while all([((n+1) < length(traceCenters(:,1))), (sum(~isnan(fittedPoints(:,1)))<minPoints)])
+        n = n+1;
+        i = indexOrder(n);
+        pointTransform = pointTransformSet(degSet, traceAng(i), interpN);
+        
+        [fittedAng(i,:), fittedPoints(i,:), fittedCutPoints(i,:)] = testCrosses(traceAng(i), traceCenters(i,:), pointTransform, cs, hfig,interpN, degSet);
+
+        if mod(n,10) == 0
+            fprintf(repmat('\b', 1, stringLen+1));
+            stringLen = fprintf('%d tested out of %d, %d approved out of %d', n, length(traceCenters(:,1)), sum(~isnan(fittedPoints(:,1))), minPoints);
             fprintf('\n');
         end
     end
@@ -35,7 +62,7 @@ function hfig = genAxonCross(hfig)
     figData.axonCrossFitCutPoints{cs}{ca} = nan(fullLength,5);
     figData.axonCrossFitLengths{cs}{ca} = nan(fullLength,1);
     
-    figData.axonCrossFitAng{cs}{ca}(centerIdx,:) = fittedAng;
+    figData.axonCrossFitAng{cs}{ca}(centerIdx) = fittedAng;
     figData.axonCrossFitPoints{cs}{ca}(centerIdx,:) = fittedPoints;
     figData.axonCrossFitCutPoints{cs}{ca}(centerIdx,:) = fittedCutPoints;
     figData.axonCrossFitLengths{cs}{ca}(centerIdx,:) = fittedLengths;
@@ -45,7 +72,7 @@ end
 
 
 function [traceCenters, traceAng, centerIdx] = genCenters(axonTraceFull)
-    n = 4;                 %downsample factor
+    n = 3;                 %downsample factor
     intThresh = 1.8;        %norm to filtered axon running median intensity, removes boutons
     
     %downsample axon trace by factor of n, then find x/y/int mid points and transfer z
@@ -123,7 +150,9 @@ function [fitAng, fitPoints, fitCutPoints] = testCrosses(testAngle, testCenter, 
     
     if all([perpAng>1, perpAng<pointSetSize])
         cutoff = stdevCut*coeff(round(perpAng),3);
-        if all([gof.sse<.1,gof.rsquare>.8, perpAng>1, perpAng<pointSetSize, cutoff<interpN/2])
+        if all([gof.sse<.1,gof.rsquare>.8, perpAng>1, perpAng<pointSetSize, coeff(perpAng,2)>(cutoff+1), (coeff(perpAng,2)+cutoff+1<interpN)])
+
+%         if all([gof.sse<.1,gof.rsquare>.8, perpAng>1, perpAng<pointSetSize, cutoff<interpN/2, coeff(perpAng,2)>cutoff+1, (coeff(perpAng,2)+cutoff)<interpN])
             %store fitted angle
             fitAng = round(degSet(round(perpAng)) + testAngle);
 

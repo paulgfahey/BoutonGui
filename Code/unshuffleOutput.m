@@ -13,6 +13,7 @@ function outData = unshuffleOutput(hfig)
             i = figData.stackKey(m);
 
             outData.axonLengths(j,i) = figData.axonIncludedTraceLength{i}{j};
+            outData.filenames{i} = figData.stackfileNameShuffled{m};
             
             outData.boutonPresence{j}(1:size(figData.boutonStatus{m}{j},1),i) = any(figData.boutonStatus{m}{j}(:,1:2),2);
             excluded = figData.boutonStatus{m}{j}(:,3);
@@ -27,12 +28,12 @@ function outData = unshuffleOutput(hfig)
                     indx = figData.boutonCenter{m}{j}(k,4);
                     
                     outData.boutonInt{j}(k,1,i) = figData.axonBrightnessProfile{m}{j}(indx,4);
-                    outData.boutonInt{j}(k,2,i) = figData.axonBrightnessProfileBaseline{m}{j}(indx,4);
-                    outData.boutonInt{j}(k,3,i) = figData.axonBrightnessProfileWeighted{m}{j}(indx,4);
+                    outData.boutonInt{j}(k,2,i) = figData.axonBrightnessProfileBaselineFinal{m}{j}(indx);
+                    outData.boutonInt{j}(k,3,i) = figData.axonBrightnessProfileWeightedFinal{m}{j}(indx);
 
                     outData.boutonWidth{j}(k,1,i) = figData.boutonWidth{m}{j}{k};
 %                     outData.boutonWidth{j}(k,2,i) = nanmean(figData.localAxonWidth{m}{j}{k});
-                    outData.boutonWidth{j}(k,2,i) = figData.axonCrossFitFilteredProfile{m}{j}(index);
+                    outData.boutonWidth{j}(k,2,i) = figData.axonCrossFitFilteredProfile{m}{j}(indx);
                     outData.boutonWidth{j}(k,3,i) = outData.boutonWidth{j}(k,1,i) - outData.boutonWidth{j}(k,2,i);
                 else
                     outData.boutonInt{j}(k,:,i) = nan(1,3,1);

@@ -4,6 +4,7 @@ function fullSave2(hfig)
     
     hfig = completionCheck(hfig);
     hfig = boutonSummaryCalc(hfig);
+    hfig = axonFinalProfile(hfig);
     stackAxonSummary(hfig);
     perAxonSummary(hfig);
     perBoutonSummary(hfig);
@@ -14,6 +15,8 @@ function fullSave2(hfig)
     filename = strrep(figData.mouseFileName,'.mat','');
     t = datetime('now','TimeZone','local');
     ts = datestr(t,'yymmdd_hhMMss',2000);
+    fprintf('\n');
+    fprintf('Full Saving');
     save(['boutonfinalsave_' filename '_' ts '.mat'],'figData','outData','-v7.3');
     cd(sourceFolder)
     guidata(hfig, figData)
@@ -147,7 +150,7 @@ function hfig = boutonSummaryCalc(hfig)
                     cbcs = figData.boutonCross{i}{j}{k};
                     cbc = figData.boutonCenter{i}{j};
                     
-                    [cbw,cbc(k,:),cbcp,cbcseg] = segmentWidth(cbcs(1:2,:),hfig,.75,0,i,j);
+                    [cbw,cbc(k,:),cbcp,cbcseg] = segmentWidth(cbcs(1:2,:),hfig,figData.boutonThresh{i}{j}{k},0,i,j);
                     figData.boutonWidth{i}{j}{k} = cbw;
                     figData.boutonCrossProfile{i}{j}{k} = cbcp;
                     figData.boutonCrossSegment{i}{j}{k} = cbcseg;
@@ -212,8 +215,10 @@ function stackAxonSummary(hfig)
             end
             
             formatImage
+            set(axonSummary, 'Position', get(0, 'Screensize'));
             print(axonSummary,'-dpng',[filename 'axons'],'-noui')
             close(axonSummary)
+            
         end
     end
     guidata(hfig,figData)
@@ -253,8 +258,71 @@ function perAxonSummary(hfig)
                     end
                     
                     formatImage
+                    set(perAxonSummary, 'Position', get(0, 'Screensize'));
                     print(perAxonSummary,'-dpng',[filename 'A' num2str(j)],'-noui');
                     close(perAxonSummary)
+                    
+                    
+                    perAxonSummary = figure;
+                    distance = figData.axonTraceSnapSkipped{i}{j}(:,1:2);
+                    distance = [0;sqrt(sum(diff(distance).^2,2))];
+                    distance = cumsum(distance)/10;
+                    axonRawTrace = figData.axonBrightnessProfile{i}{j}(:,4);
+                    skipped = isnan(figData.axonTraceSnapSkipped{i}{j}(:,4));
+                    
+                    subplot(3,1,1);
+                    hold on;
+                    redTrace = axonRawTrace;
+                    redTrace(~skipped) = nan;
+                    plot(distance,redTrace,'r');
+                    
+                    blackTrace = axonRawTrace;
+                    blackTrace(skipped) = nan;
+                    plot(distance,blackTrace,'k');
+                    
+                    baselineTrace = figData.axonBrightnessProfileBaselineFinal{i}{j};
+                    baselineTrace(skipped) =  nan;
+                    plot(distance,baselineTrace,'b');
+                    
+                    axis([0,max(distance),0,255])
+                    
+                    subplot(3,1,2);
+                    hold on
+                    plot(distance,figData.axonBrightnessProfileWeightedFinal{i}{j})
+                    
+                    axis([0,max(distance),0,25])
+                    
+                    subplot(3,1,3);
+                    hold on
+                    
+                    if i <= size(figData.axonCrossFitFilteredProfile,2)
+                        if ~isempty(figData.axonCrossFitFilteredProfile{i}) & ~(j>length(figData.axonCrossFitFilteredProfile{i}))
+                            filteredFit = figData.axonCrossFitFilteredProfile{i}{j};
+                            filteredFit(skipped) = nan;
+                            plot(distance,filteredFit,'k');
+                            plot(distance,filteredFit+3,':','Color',[0.2,0.2,0.2]);
+                        end
+                    end
+                    if i <= size(figData.axonCrossFitLengths,2)
+                        if ~isempty(figData.axonCrossFitLengths{i}) & ~(j>length(figData.axonCrossFitLengths{i}))
+                            axonWidths = figData.axonCrossFitLengths{i}{j};
+                            plot(distance(~isnan(axonWidths)), axonWidths(~isnan(axonWidths)),'.r');
+                        end
+                    end
+                    
+                    boutonWidths = figData.boutonWidth{i}{j};
+                    
+                    for k = 1:figData.maxBouton(j)
+                        if ~isempty(boutonWidths{k})
+                            plot(distance(figData.boutonCenter{i}{j}(k,4)),boutonWidths{k},'.g', 'MarkerSize',10);
+                        end
+                    end
+                    
+                    axis([0,max(distance),0,25])
+                    set(perAxonSummary, 'Position', get(0, 'Screensize'));
+                    print(perAxonSummary,'-dpng',[filename 'A' num2str(j) '2'],'-noui');
+                    close(perAxonSummary)
+                    
                 end
             end
         end
@@ -348,6 +416,17 @@ function perBoutonSummary(hfig)
 %                             line(lacseg(m*2-1:m*2,1)-xmin+1,lacseg(m*2-1:m*2,2)+1-ymin,'Color','c','LineWidth',2);
 %                         end
                         
+                        axonCrosses = figData.axonCrossFitCutPoints{i}{j};
+                        axonCrossesy = [axonCrosses(:,2),axonCrosses(:,4)];
+                        axonCrossesx = [axonCrosses(:,1),axonCrosses(:,3)];
+                        axonCrosses = axonCrosses(all([all(axonCrossesx>xmin,2) & all(axonCrossesx<xmax,2) ...
+                            & all(axonCrossesy>ymin,2) & all(axonCrossesy<ymax,2)],2),:);
+
+                        for n = 1:size(axonCrosses,1)
+                           points = axonCrosses(n,:);
+                           plot([points(1),points(3)]-xmin+1, [points(2),points(4)]-ymin+1,'r');
+                        end
+
                         scatter(cbcp(k,1)-xmin+1,cbcp(k,2)-ymin+1);
                         
                         title('clicked overlays')
@@ -359,6 +438,39 @@ function perBoutonSummary(hfig)
 
                     formatImage
 
+                    
+                    %plot bouton cross int with threshold
+                    subplot(figData.numStacks,5,5*pos-2)
+                    hold on
+                    if find(figData.boutonStatus{i}{j}(k,:)) ~= 3
+                        boutonProfile = boutonWidthPlotting(i,j,k,hfig);
+                        plot(boutonProfile(:,1),boutonProfile(:,2));
+                        thresh = figData.boutonThresh{i}{j}{k};
+                        plot([-10,10],[thresh,thresh],'--');
+                        axis([-10 10, 0 20])
+                        indx = figData.boutonCenter{i}{j}(k,4);
+                        localWidth = figData.axonCrossFitFilteredProfile{i}{j}(indx);
+                        boutonWidth = figData.boutonWidth{i}{j}{k};
+                        widthDiff = boutonWidth - localWidth;
+                        if widthDiff < 1
+                            printDiff = '<1';
+                        else
+                            printDiff = num2str(round(widthDiff,2));
+                        end
+                        
+                        if boutonWidth < 1
+                            printBout = '<1';
+                        else
+                            printBout = num2str(round(boutonWidth,2));
+                        end
+                        
+                        
+                        title(['Bouton: ' printBout ' Axon: ' num2str(round(localWidth,2)) ' Diff: ' printDiff]);
+                    else
+                        text(.4,.5,'EXCLUDED')
+                        set(gca,'Visible','off')
+                    end
+                    
 %                     %plot bouton and axon cross int with thresholds
 %                     subplot(figData.numStacks,5,5*pos-2)
 %                     hold on
@@ -393,6 +505,8 @@ function perBoutonSummary(hfig)
 %                         text(.4,.5,'EXCLUDED')
 %                         set(gca,'Visible','off')
 %                     end
+
+
 
                     %plot bouton and axon longitudinal int with thresholds
                     subplot(figData.numStacks,5,5*pos-1)
@@ -439,7 +553,8 @@ function perBoutonSummary(hfig)
     guidata(hfig,figData)
 end
 
-function [boutonProfile, axonProfile] = boutonWidthPlotting(cs,ca,cb,hfig)
+% function [boutonProfile, axonProfile] = boutonWidthPlotting(cs,ca,cb,hfig)
+function boutonProfile = boutonWidthPlotting(cs,ca,cb,hfig)
     figData = guidata(hfig);
 
     backbone = figData.axonBrightnessProfile{cs}{ca}(:,1:2);
@@ -453,19 +568,47 @@ function [boutonProfile, axonProfile] = boutonWidthPlotting(cs,ca,cb,hfig)
     boutonProfile = nan(size(boutonProfileInt,1),2);
     boutonProfile(:,2) = boutonProfileInt;
     boutonProfile(:,1) = boutonProfileInd;
-    
-    axonProfile = {};
-    for m = 1:size(figData.localAxonCrossProfile{cs}{ca}{cb},2)
-        axonIndx = find(ismember(backbone(:,1:2),figData.localAxonCenter{cs}{ca}{cb}(m,1:2),'rows'),1,'first');
-        axonProfileInt = figData.localAxonCrossProfile{cs}{ca}{cb}{m};
-        weight = figData.axonBrightnessProfileBaseline{cs}{ca}(axonIndx,4); 
-        axonProfileInt = (axonProfileInt /weight);
-        [~,ind] = max(axonProfileInt);
-        axonProfileInd = (1:size(axonProfileInt,1)) - ind;
-        axonProfile{m} = nan(size(axonProfileInt,1),2); %#ok<*AGROW>
-        axonProfile{m}(:,2) = axonProfileInt;
-        axonProfile{m}(:,1) = axonProfileInd;
-    end
+%     
+%     axonProfile = {};
+%     for m = 1:size(figData.localAxonCrossProfile{cs}{ca}{cb},2)
+%         axonIndx = find(ismember(backbone(:,1:2),figData.localAxonCenter{cs}{ca}{cb}(m,1:2),'rows'),1,'first');
+%         axonProfileInt = figData.localAxonCrossProfile{cs}{ca}{cb}{m};
+%         weight = figData.axonBrightnessProfileBaseline{cs}{ca}(axonIndx,4); 
+%         axonProfileInt = (axonProfileInt /weight);
+%         [~,ind] = max(axonProfileInt);
+%         axonProfileInd = (1:size(axonProfileInt,1)) - ind;
+%         axonProfile{m} = nan(size(axonProfileInt,1),2); %#ok<*AGROW>
+%         axonProfile{m}(:,2) = axonProfileInt;
+%         axonProfile{m}(:,1) = axonProfileInd;
+%     end
 end
 
 
+function hfig = axonFinalProfile(hfig)
+    figData = guidata(hfig);
+    for i = 1:figData.numStacks
+        for j = 1:figData.maxAxon
+            intTrace = figData.axonBrightnessProfile{i}{j}(:,4);
+            skipTrace = isnan(figData.axonTraceSnapSkipped{i}{j}(:,4));
+            skipTrace2 = skipTrace;
+            for k = 1:figData.maxBouton(j)
+                boutonIdx = figData.boutonCenter{i}{j}(k,4);
+                if ~isnan(boutonIdx) & ~isempty(figData.boutonWidth{i}{j}{k})
+                    margin = round((figData.boutonWidth{i}{j}{k})*1.3);
+                    skipTrace(boutonIdx-margin:boutonIdx+margin)=1;
+                end
+            end
+            skipTrace = skipTrace(1:size(skipTrace2,1));
+            gapTrace = intTrace;
+            gapTrace(skipTrace) = nan;
+            interpTrace = interpGaps(hfig,gapTrace);
+            baselineTrace = medfilt1(interpTrace,41);
+            figData.axonBrightnessProfileBaselineFinal{i}{j} = baselineTrace;
+            gapTrace = intTrace;
+            gapTrace(skipTrace2) = nan;
+            figData.axonBrightnessProfileWeightedFinal{i}{j} = gapTrace./baselineTrace';
+            figData.axonTraceSnapSkipped{i}{j}(:,4) = gapTrace./baselineTrace';
+        end
+    end
+    guidata(hfig,figData);
+end
